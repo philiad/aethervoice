@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical" android:weightSum="10"
+	android:background="#2b2b2b">
+
+	<View style="@style/layoutWeightSumV" android:layout_weight="1" />
+	<LinearLayout style="@style/layoutWeightSumV"
+		android:layout_weight="7.5" android:weightSum="10"
+		android:orientation="vertical">
+		<LinearLayout style="@style/layoutWeightSumV"
+			android:layout_weight="1.5" android:background="@drawable/bg_call_header">
+			<TextView android:layout_width="fill_parent"
+				android:layout_height="fill_parent" android:id="@+id/cs_vcaller"
+				android:paddingLeft="10dp" android:ellipsize="marquee"
+				android:singleLine="true" android:gravity="center_vertical|left"
+				android:textStyle="bold" android:visibility="invisible" />
+		</LinearLayout>
+		<LinearLayout android:id="@+id/voice_call" style="@style/layoutWeightSumV"
+			android:layout_weight="7.5" android:background="@drawable/bg_call_main"
+			android:gravity="center" android:orientation="vertical"
+			android:visibility="visible">
+			<TextView android:layout_width="wrap_content"
+				style="@style/callScreenCallerStatus" android:id="@+id/cs_status1" />
+			<LinearLayout android:id="@+id/cs_image_bg"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:padding="20dp" android:gravity="center" android:background="@drawable/bg_call_photo">
+				<ImageView android:layout_width="149dip"
+					android:layout_height="160dip" android:id="@+id/cs_image" />
+			</LinearLayout>
+			<TextView android:layout_width="280dp"
+				style="@style/callScreenCallerStatus" android:gravity="center_horizontal"
+				android:id="@+id/cs_caller" />
+		</LinearLayout>
+
+		<RelativeLayout android:id="@+id/video_call" style="@style/layoutWeightSumV"
+			android:layout_weight="7.5" android:background="@drawable/bg_call_main"
+			android:gravity="center" android:visibility="gone">
+
+			<VideoView android:id="@+id/video_frame"
+				android:layout_width="wrap_content" android:layout_height="fill_parent"
+				android:layout_alignParentRight="true"
+				android:layout_alignParentTop="true" />
+				
+			<org.sipdroid.sipua.ui.VideoPreview
+				android:layout_alignParentBottom="true"
+				android:layout_alignParentLeft="true" android:gravity="center"
+				android:id="@+id/camera_preview" android:layout_width="100px"
+				android:layout_height="82px" />
+
+
+		</RelativeLayout>
+		<LinearLayout style="@style/layoutWeightSumV"
+			android:layout_weight="1" android:weightSum="10" android:orientation="horizontal"
+			android:background="@drawable/bg_call_footer" android:paddingLeft="5dp">
+			<ImageView style="@style/layoutWeightSumH"
+				android:layout_weight=".75" android:id="@+id/cs_icon"
+				android:background="@drawable/sym_call" />
+			<TextView style="@style/layoutWeightSumH"
+				android:layout_weight="7.25" android:id="@+id/cs_status"
+				android:gravity="center_vertical" android:paddingLeft="10dp"
+				android:ellipsize="marquee" />
+			<Chronometer style="@style/layoutWeightSumH"
+				android:layout_weight="2" android:id="@+id/cs_duration"
+				android:gravity="center" android:text=" 999: 59" />
+		</LinearLayout>
+
+	</LinearLayout>
+	<LinearLayout style="@style/layoutWeightSumV"
+		android:layout_weight="1.5" android:orientation="vertical"
+		android:gravity="center">
+		<!--
+			<TextView android:id="@+id/cs_stats"
+			android:layout_gravity="center_horizontal"
+			android:gravity="center_horizontal"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:textColor="?android:attr/textColorSecondary"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" /> <TextView
+			android:id="@+id/cs_codec" android:layout_gravity="center_horizontal"
+			android:gravity="center_horizontal"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:textColor="?android:attr/textColorSecondary"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+		-->
+
+		<Button android:id="@+id/send_video" android:layout_gravity="center_vertical|center"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:background="@drawable/btn_send_video_f1" android:visibility="invisible" />
+	</LinearLayout>
+
+</LinearLayout>

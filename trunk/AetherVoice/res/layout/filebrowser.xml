@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">	
+	<!-- 
+	
+	<LinearLayout
+	android:orientation="horizontal"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:layout_gravity="center_vertical"
+	android:padding="10px"
+	android:background="#333333">	
+		
+	    <TextView
+		android:text="FileName:  "
+		style="@style/fileBrowserPathTV"/>
+				
+		<TextView
+		android:id="@+id/fb_filename"
+		android:text=""
+		style="@style/fileBrowserTV"/>	
+		
+		
+		<Button
+		android:id="@+id/fb_import"
+		android:text="Import"
+		style="@style/fileBrowserCancelButton"/>
+		 
+		
+		
+    	<Button
+		android:id="@+id/fb_cancel"
+		android:text="Cancel"
+		style="@style/fileBrowserCancelButton"/>
+	
+	</LinearLayout>
+	-->
+	
+	<LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" 
+    android:layout_weight="1">
+    
+		<GridView android:id="@+id/gridView"
+		android:numColumns="3"
+		android:listSelector="@drawable/selector_background"
+		android:layout_width="300px"
+		android:layout_height="250px"
+		android:gravity="center"
+		android:padding="10px"
+		android:verticalSpacing="30px"
+		android:horizontalSpacing="20px"
+		android:columnWidth="30px"
+		android:stretchMode="columnWidth"/>
+	    
+	</LinearLayout>
+    
+    
+    
+    <LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="right"
+    android:background="#333333"
+    android:paddingLeft="10px">
+    	<!-- 
+    	<Button
+		android:id="@+id/fb_back"
+		android:text="BACK"
+		style="@style/fileBrowserBackButton"/>
+		 -->
+		 
+		<TextView
+		android:text="PATH:  "
+		style="@style/fileBrowserPathTV"/>
+				
+		<TextView
+		android:id="@+id/fb_path"
+		android:text=""
+		style="@style/fileBrowserTV"/>	
+		
+		<!--   
+		<Button
+		android:id="@+id/fb_open"
+		android:text="Open"
+		style="@style/fileBrowserOpenButton"/>
+		-->
+		
+		
+    </LinearLayout>
+    
+</LinearLayout>

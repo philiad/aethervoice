@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<!-- START: Client -->
+    <style name="fileBrowserBackButton">
+		<item name="android:layout_width">70dp</item>
+		<item name="android:layout_height">32dp</item>
+		<item name="android:layout_marginRight">10dp</item>
+		<item name="android:textSize">12sp</item>
+	</style>
+	<style name="fileBrowserOpenButton">
+		<item name="android:layout_width">70dp</item>
+		<item name="android:layout_height">32dp</item>
+		<item name="android:layout_gravity">center_vertical</item>
+		<item name="android:textSize">12sp</item>
+	</style>
+	<style name="fileBrowserCancelButton">
+		<item name="android:layout_width">70dp</item>
+		<item name="android:layout_height">32dp</item>
+		<item name="android:layout_gravity">center_vertical</item>
+		<item name="android:layout_marginLeft">5dp</item>
+		<item name="android:textSize">12sp</item>
+	</style>
+	<style name="fileBrowserPathTV">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_marginRight">10dp</item>
+		<item name="android:singleLine">true</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+	<style name="fileBrowserTV">
+		<item name="android:layout_width">fill_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_weight">10</item>
+		<item name="android:layout_marginRight">10dp</item>
+		<item name="android:singleLine">true</item>
+	</style>
+	<style name="fileBrowserGrid">
+		<item name="android:listSelector">@drawable/selector_background</item>
+		<item name="android:layout_width">500dp</item>
+		<item name="android:layout_height">250dp</item>
+		<item name="android:gravity">center</item>
+		<item name="android:padding">10dp</item>
+		<item name="android:verticalSpacing">30dp</item>
+		<item name="android:horizontalSpacing">20dp</item>
+		<item name="android:columnWidth">30dp</item>
+		<item name="android:stretchMode">columnWidth</item>
+		<!--
+		   <item name="android:divider">@android:drawable/divider_horizontal_bright</item> 
+		-->
+	</style>
+	<style name="fileBrowserArtView">
+		<item name="android:layout_width">50dp</item>
+		<item name="android:layout_height">50dp</item>
+		<item name="android:layout_gravity">center</item>
+	</style>
+	<style name="fileBrowserGridTV">
+		<item name="android:layout_width">fill_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_marginTop">5dp</item>
+		<item name="android:gravity">center</item>
+		<item name="android:singleLine">true</item>
+		<item name="android:textSize">12sp</item>
+	</style>
+	<style name="fileBrowserRenameTV">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_marginLeft">20dp</item>
+		<item name="android:layout_marginRight">20dp</item>
+		<item name="android:gravity">left</item>
+		<item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+	</style>
+	<style name="fileBrowserRenameEdit">
+		<item name="android:layout_width">fill_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_marginLeft">20dp</item>
+		<item name="android:layout_marginRight">20dp</item>
+		<item name="android:scrollHorizontally">true</item>
+		<item name="android:autoText">false</item>
+		<item name="android:capitalize">none</item>
+		<item name="android:gravity">fill_horizontal</item>
+		<item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+	</style>
+	
+	<style name = "accountSetInfo">
+		<item name = "android:layout_width">0dp</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">37</item> 
+		<item name = "android:textSize">17sp</item>
+		<item name = "android:paddingLeft">20dp</item>
+		<item name = "android:paddingRight">10dp</item>
+		<item name = "android:textColor">#fffafa</item>
+	</style>
+	<style name = "accountSetField">
+		<item name = "android:layout_width">0dp</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">63</item> 
+		<item name = "android:textSize">17sp</item>
+		<item name = "android:paddingLeft">7dp</item>
+		<item name = "android:paddingRight">10dp</item>
+	</style>
+	<style name = "callSetLabel">
+		<item name = "android:layout_width">0dp</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">37</item> 
+		<item name = "android:textSize">17sp</item>
+		<item name = "android:paddingLeft">10dp</item>
+		<item name = "android:paddingRight">10dp</item>
+		<item name = "android:layout_gravity">center_vertical</item>
+	</style>
+		<style name = "callSetField">
+		<item name = "android:layout_width">0dp</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">63</item> 
+		<item name = "android:paddingLeft">7dp</item>
+		<item name = "android:paddingRight">10dp</item>
+	</style>
+	<style name = "checkBoxesLabel">
+		<item name = "android:layout_width">0dp</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">95</item> 
+		<item name = "android:paddingLeft">7dp</item>
+		<item name = "android:paddingRight">10dp</item>
+		<item name = "android:textSize">17sp</item>
+	</style>
+		<style name = "checkBoxes">
+		<item name = "android:layout_width">wrap_content</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">5</item> 
+	</style>
+	<style name = "horizontalLayout">
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:weightSum">100</item> 
+		<item name = "android:orientation">horizontal</item>
+		<item name = "android:background">@drawable/sub_main</item>
+	</style>
+	<style name = "horizontalLayout2">
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:weightSum">100</item> 
+		<item name = "android:orientation">horizontal</item>
+		<item name = "android:background">@drawable/sub_main</item>
+		<item name = "android:paddingLeft">15dp</item>
+	</style>
+	<style name = "verticalLayout">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_weight">11</item> 
+		<item name = "android:orientation">vertical</item>
+	</style>
+	<style name = "verticalLayout2">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_weight">1</item> 
+		<item name = "android:orientation">vertical</item>
+	</style>
+	<style name = "verticalLayoutCenter">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_weight">1</item> 
+		<item name = "android:orientation">vertical</item>
+	</style>
+	<style name = "advanceSetLabel">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_weight">2</item> 
+		<item name = "android:paddingLeft">7dp</item>
+		<item name = "android:paddingRight">10dp</item>
+		<item name = "android:textSize">22sp</item>
+		<item name = "android:textStyle">bold</item>
+		<item name = "android:textColor">#fffafa</item>
+		<item name = "android:background">@drawable/sub_main</item>
+		<item name = "android:gravity">center_vertical</item>
+	</style>
+	
+	<style name="tabText">
+		<item name="android:textSize">10sp</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+	<style name = "titles">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:textSize">19sp</item>
+		<item name = "android:textStyle">bold </item>
+		<item name = "android:textColor">#fffafa</item>
+	</style>
+	<style name = "sublabels">
+		<item name = "android:background">@drawable/sub_header</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:textSize">15sp</item>
+		<item name = "android:textStyle">bold </item>
+		<item name = "android:paddingLeft">5dp</item>
+		<item name = "android:paddingRight">15dp</item>
+		<item name = "android:paddingTop">5dp</item>
+		<item name = "android:gravity">right</item>
+		<item name = "android:textColor">#8c8c8c</item>
+	</style>
+	<style name = "dialogText">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:textSize">20sp</item>
+	</style>
+	<style name = "settingsLayout">
+		<item name = "android:paddingLeft">10dp</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:gravity">center_vertical</item>
+<!--		<item name = "android:layout_weight">1</item>-->
+		<item name = "android:orientation">horizontal</item>
+	</style>
+	<style name = "settingsLayoutFooter">
+		<item name = "android:paddingLeft">10dp</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:background">@drawable/sub_foot</item>
+	</style>
+	<style name = "settingsAccountName">
+		<item name = "android:paddingLeft">10dp</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:background">@drawable/sub_main</item>
+		<item name = "android:textSize">17sp</item>
+		<item name = "android:textColor">#fffafa</item>
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:gravity">center_vertical</item>
+	</style>
+	<style name = "settingsSubLayout">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:orientation">vertical</item>
+	</style>
+	<style name = "layoutWeightSum">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_weight">25</item> 
+	</style>
+	<style name = "layoutWeightSumV">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">0px</item>
+	</style>
+	<style name = "layoutWeightSumV2">
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:layout_height">0px</item>
+		<item name = "android:weightSum">10</item>
+	</style>
+	<style name = "layoutWeightSumH">
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_width">0px</item>
+	</style>
+	<style name = "layoutWeightSumH2">
+		<item name = "android:layout_height">fill_parent</item>
+		<item name = "android:layout_width">0px</item>
+		<item name = "android:weightSum">10</item>
+	</style>
+	<style name = "callScreenCallerStatus">
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:textSize">18sp</item>
+		<item name = "android:textStyle">bold</item>
+		<item name = "android:ellipsize">marquee</item>
+		<item name = "android:singleLine">true</item>
+	</style>
+	<style name = "layoutWrap">
+		<item name = "android:layout_height">wrap_content</item>
+		<item name = "android:layout_width">wrap_content</item>
+	</style>
+	<style name = "panelButtonsFrame">
+		<item name = "android:layout_height">0px</item>
+		<item name = "android:layout_width">fill_parent</item>
+		<item name = "android:gravity">center</item>
+		<item name = "android:background">@drawable/panel_buttons</item>
+		<item name = "android:layout_weight">1</item>
+		<item name = "android:orientation">horizontal</item>
+	</style>
+</resources>

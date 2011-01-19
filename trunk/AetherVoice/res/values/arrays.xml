@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="protocol">
+        <item>UDP</item>
+        <item>TCP</item>
+    </string-array>
+    <string-array name="connection">
+        <item>WLAN</item>
+        <item>GPRS/3G</item>
+        <item>EDGE</item>
+        <item>VPN</item>
+    </string-array>
+    <string-array name="calltype">
+        <item>SIP, when available</item>
+        <item>PSTN Gateway</item>
+    </string-array>
+    <string-array name="calltypevalues">
+        <item>SIP</item>
+        <item>PSTN</item>
+    </string-array>
+    <string-array name="number_labels">
+        <item>Home</item>
+        <item>Mobile</item>
+        <item>Work</item>
+        <item>FAX H.</item>
+        <item>FAX W.</item>
+        <item>Pager</item>
+        <item>Other</item>
+        <item>Custom</item>
+    </string-array>
+    <string-array name="email_labels">
+        <item>Home</item>
+        <item>Work</item>
+        <item>Other</item>
+        <item>Custom</item>
+    </string-array>
+    <integer-array name="ad_weights">
+        <item>5</item>
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+        <item>1</item>
+    </integer-array>
+    <string-array name="ad_names">
+		<item>ad_1</item>
+		<item>ad_2</item>
+		<item>ad_3</item>
+		<item>ad_4</item>
+    </string-array>
+    <array name="ad_drawables">
+    		<item>@drawable/ad_1</item>
+        <item>@drawable/ad_2</item>
+        <item>@drawable/ad_3</item>
+        <item>@drawable/ad_4</item>
+    </array>
+</resources>

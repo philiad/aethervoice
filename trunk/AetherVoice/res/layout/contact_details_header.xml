@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+	android:background="@drawable/panel_black">
+    <!-- android:background="#204080" -->
+	<LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:paddingLeft="5dip"
+		android:paddingRight="5dip">
+	  	<TextView
+			android:id="@+id/kind_label"
+			android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:paddingTop="10dip"
+	        android:textSize="17dip"
+	        android:textColor="#BBBBBB"
+	        android:textStyle="bold"
+	        android:layout_weight="1"/>
+   	</LinearLayout>
+</LinearLayout>
