@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/panel_black"
+    android:weightSum="6">
+  	<TextView
+		android:id="@+id/edit_kind_label"
+		android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dip"
+        android:paddingLeft="5dip"
+		android:paddingRight="5dip"
+        android:textSize="17dip"
+        android:textColor="#BBBBBB"
+        android:textStyle="bold"
+        android:layout_weight="5"/>
+    <LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="0dip"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:padding="10dip"
+		android:gravity="center">
+	   	<ImageButton
+	   		android:id="@+id/btn_add"
+	   		android:layout_width="fill_parent"
+	   		android:layout_height="wrap_content"
+	   		android:background="@drawable/btn_add_bg"/>
+	</LinearLayout>
+</LinearLayout>

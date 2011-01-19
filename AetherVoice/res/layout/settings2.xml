@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical" android:weightSum="8">
+<!--	<ScrollView android:layout_width="fill_parent"-->
+<!--		android:layout_height="0px" android:layout_weight="7"-->
+<!--		android:scrollbarFadeDuration="1"-->
+<!--		android:background="#595454">-->
+	<TextView
+	android:layout_width = "fill_parent"
+	android:layout_height = "wrap_content"
+	android:gravity = "center_vertical"
+	android:textColor = "#ffffff"
+	android:text = "VoIP Options"
+	android:textSize = "24dp"
+	android:background = "@drawable/panel_buttons"
+	android:paddingTop = "10dp"
+	android:paddingLeft = "7dp"
+	/>
+		<LinearLayout android:layout_width="fill_parent" android:orientation="vertical" 
+		android:layout_height="0px" android:layout_weight="7" android:background="#595454"
+			android:paddingLeft="2px" android:paddingRight="2px">
+			
+			<!-- Account Set -->
+			<LinearLayout	android:id="@+id/account_title" style="@style/settingsLayout" android:background="@drawable/header_collapse_bg">
+				<TextView style="@style/titles" android:text="Accounts Settings" />
+			</LinearLayout>
+			
+			<ScrollView style="@style/verticalLayout" android:id="@+id/accounts_group">
+				<LinearLayout style="@style/verticalLayout2">
+					<TextView android:id="@+id/account_submenu" style="@style/sublabels" android:text="Accounts" />
+					<TextView android:id="@+id/account1" style="@style/settingsAccountName" android:hint="SIP Account 1" />
+					<TextView android:id="@+id/account2" style="@style/settingsAccountName" android:hint="SIP Account 2" />
+					<LinearLayout style="@style/verticalLayout" android:id="@+id/account_info_group" >
+						<LinearLayout style="@style/horizontalLayout" >
+							<TextView style="@style/accountSetInfo" android:text="@string/settings_label_username" />
+							<EditText android:id="@+id/username" style="@style/accountSetField" android:hint="@string/settings_label_username"/>
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout" >
+							<TextView style="@style/accountSetInfo" android:text="@string/settings_label_password" />
+							<EditText android:id="@+id/password" style="@style/accountSetField"	android:password="true" android:hint="@string/settings_label_password" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout" >
+							<TextView style="@style/accountSetInfo" android:text="@string/settings_label_server" />
+							<EditText style="@style/accountSetField" android:id="@+id/server" android:hint="@string/settings_label_server" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout" >
+							<TextView style="@style/accountSetInfo" android:text="@string/settings_label_domain" />
+							<EditText style="@style/accountSetField" android:id="@+id/domain" android:hint="@string/settings_label_domain" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout" >
+							<TextView style="@style/accountSetInfo" android:text="@string/settings_label_callerid" />
+							<EditText android:id="@+id/callerid" style="@style/accountSetField" android:hint="@string/settings_label_callerid" />
+						</LinearLayout>
+					</LinearLayout>
+					<View style="@style/settingsLayoutFooter"/>
+					<!-- Call Options -->
+	
+					<TextView android:id="@+id/call_options_title"
+						style="@style/sublabels" android:text="Call Options" />
+						
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Connection" style="@style/callSetLabel" />
+						<Spinner android:id="@+id/connection" style="@style/callSetField" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Port" style="@style/callSetLabel" />
+						<EditText android:id="@+id/port" style="@style/accountSetField" android:inputType="phone" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView style="@style/callSetLabel" android:text="Protocol" />
+						<Spinner android:id="@+id/protocol" style="@style/callSetField" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Call Type" style="@style/callSetLabel" />
+						<Spinner android:id="@+id/calltype" style="@style/callSetField" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Auto-Answer in use" style="@style/checkBoxesLabel" />
+						<CheckBox android:id="@+id/answer_in_use" style="@style/checkBoxes" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Auto-Answer on demand" style="@style/checkBoxesLabel" />
+						<CheckBox android:id="@+id/answer_on_demand" style="@style/checkBoxes" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Auto-Answer headset" style="@style/checkBoxesLabel" />
+						<CheckBox android:id="@+id/answer_headset" style="@style/checkBoxes" />
+					</LinearLayout>
+					<View style="@style/settingsLayoutFooter"/>
+				</LinearLayout>
+			</ScrollView>
+			<!-- Notifications -->
+			
+			<LinearLayout android:id="@+id/notifications_title"	style="@style/settingsLayout" android:background="@drawable/header_expand_bg">
+				<TextView android:text="Notifications" style="@style/titles" />
+			</LinearLayout>
+			<ScrollView style="@style/verticalLayout" android:id="@+id/notifications_group">
+				<LinearLayout style="@style/verticalLayout2">
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Missed Call" style="@style/checkBoxesLabel" />
+						<CheckBox android:id="@+id/missed_call" style="@style/checkBoxes" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Voice Mail" style="@style/checkBoxesLabel" />
+						<CheckBox android:id="@+id/voice_mail" style="@style/checkBoxes" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="No Data" style="@style/checkBoxesLabel" />
+						<CheckBox android:id="@+id/no_data" style="@style/checkBoxes" />
+					</LinearLayout>
+					<LinearLayout style="@style/horizontalLayout">
+						<TextView android:text="Ring Tone" style="@style/callSetLabel" />
+						<Button android:id="@+id/ringtone" style="@style/callSetField" />
+					</LinearLayout>
+					<View style="@style/settingsLayoutFooter"/>
+				</LinearLayout>
+			</ScrollView>
+			
+			<!-- PBXes Options -->
+			
+			<LinearLayout android:id="@+id/pbxes_option_title" style="@style/settingsLayout" android:background = "@drawable/header_expand_bg">
+				<TextView android:text="PBXes Features"  style = "@style/titles"/>
+			</LinearLayout>
+					<ScrollView style="@style/verticalLayout" android:id="@+id/pbxes_option_group">
+					<LinearLayout style="@style/settingsSubLayout" android:id="@+id/adv_pbxes_option_frame" >
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Simultaneous Outbound" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_pbx_simul_outbound" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Improve Audio" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_pbx_improve_audio" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/callSetLabel" android:text="URL Callback" />
+							<EditText style="@style/callSetField" android:id="@+id/adv_pbx_url_loc_callback" />
+						</LinearLayout>
+						<LinearLayout style="@style/verticalLayout2" android:id="@+id/adv_pbx_url_location_callback_subgroup">
+							<LinearLayout style="@style/horizontalLayout2">
+								<TextView style="@style/checkBoxesLabel" android:text="Update Location" />
+								<CheckBox style="@style/checkBoxes" android:id="@+id/adv_pbx_upd_loc" />
+							</LinearLayout>
+							<LinearLayout style="@style/horizontalLayout2">
+								<TextView style="@style/checkBoxesLabel" android:text="Trigger Callback" />
+								<CheckBox style="@style/checkBoxes" android:id="@+id/adv_pbx_trigger_callback" />
+							</LinearLayout>
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Trigger Callthru" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_pbx_trigger_callthru" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2" android:id="@+id/adv_pbx_callthru_field_group">
+							<TextView style="@style/callSetLabel" android:text="Prefix Callthru" />
+							<EditText style="@style/callSetField" android:id="@+id/adv_pbx_pref_callthru" />
+						</LinearLayout>
+						<View style="@style/settingsLayoutFooter"/>
+					</LinearLayout>
+				</ScrollView>
+			<!-- Advance Settings -->
+
+			<LinearLayout android:id="@+id/advance_settings_title" style="@style/settingsLayout" android:background="@drawable/header_expand_bg" >
+				<TextView android:text="Advance Settings" style="@style/titles" />
+			</LinearLayout>
+			<ScrollView style="@style/verticalLayout" android:id="@+id/advance_settings_group">
+				<LinearLayout style="@style/verticalLayout2">
+				
+					<TextView android:text="Call Exceptions" android:id="@+id/adv_call_exceptions" style="@style/advanceSetLabel" />
+					<LinearLayout style="@style/settingsSubLayout" android:id="@+id/adv_call_exceptions_frame" >
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/callSetLabel" android:text="Search and Replace"/>
+							<EditText style="@style/callSetField" android:id="@+id/adv_search_replace_option" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/callSetLabel" android:text="Exclude"/>
+							<EditText style="@style/callSetField" android:id="@+id/adv_exclude_option" />
+						</LinearLayout>
+					</LinearLayout>
+	
+					<TextView android:text="Video Quality" android:id="@+id/adv_video_quality" style="@style/advanceSetLabel" />
+					<LinearLayout style="@style/horizontalLayout2" android:id="@+id/adv_video_option_frame" >
+							<TextView style="@style/callSetLabel" android:text="Choose Quality" />
+							<Spinner style="@style/callSetField" android:id="@+id/adv_video_option" />
+					</LinearLayout>
+					
+					<TextView android:text="STUN Options" android:id="@+id/adv_stun_option" style="@style/advanceSetLabel" />
+					<LinearLayout style="@style/settingsSubLayout" android:id="@+id/adv_stun_option_frame" >
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Use STUN" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_use_stun" />
+						</LinearLayout>
+						<LinearLayout style="@style/verticalLayout2" android:id="@+id/adv_stun_field_group">
+							<LinearLayout style="@style/horizontalLayout2" >
+								<TextView style="@style/callSetLabel" android:text="Server" />
+								<EditText style="@style/accountSetField" android:id="@+id/adv_stun_server" />
+							</LinearLayout>
+							<LinearLayout style="@style/horizontalLayout2" >
+								<TextView style="@style/callSetLabel" android:text="Port" />
+								<EditText style="@style/accountSetField" android:id="@+id/adv_stun_port" android:inputType="phone" />
+							</LinearLayout>
+						</LinearLayout>
+					</LinearLayout>
+					
+					<TextView android:text="MMTel Options" android:id="@+id/adv_mmtel_option" style="@style/advanceSetLabel" />
+					<LinearLayout style="@style/settingsSubLayout" android:id="@+id/adv_mmtel_option_frame" >
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Use MMTel" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_use_mmtel" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2" android:id="@+id/adv_mmtel_field_group">
+							<TextView style="@style/callSetLabel" android:text="Q-Value"/>
+							<EditText style="@style/callSetField" android:id="@+id/adv_mmtel_q_value" android:inputType="numberDecimal" />
+						</LinearLayout>
+					</LinearLayout>
+					
+					<TextView android:text="Wireless Options" android:id="@+id/adv_wireless_option" style="@style/advanceSetLabel" />
+					<LinearLayout style="@style/settingsSubLayout" android:id="@+id/adv_wireless_option_frame" >
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Control Wi-Fi power" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_wifi_power" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Select Wi-Fi AP" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_wifi_ap" />
+						</LinearLayout>
+						<LinearLayout style="@style/horizontalLayout2">
+							<TextView style="@style/checkBoxesLabel" android:text="Screen On" />
+							<CheckBox style="@style/checkBoxes" android:id="@+id/adv_wireless_screen_on" />
+						</LinearLayout>
+					</LinearLayout>
+					
+					
+				</LinearLayout>
+			</ScrollView>
+		</LinearLayout>
+	
+	<LinearLayout style="@style/panelButtonsFrame">
+		<Button style="@style/layoutWrap" android:id="@+id/btn_save" android:background="@drawable/btn_save_bg" />
+		<Button style="@style/layoutWrap" android:id="@+id/btn_revert" android:background="@drawable/btn_revert_bg" />
+		<Button style="@style/layoutWrap" android:id="@+id/btn_register" android:background="@drawable/btn_register_bg" />
+	</LinearLayout>
+</LinearLayout>

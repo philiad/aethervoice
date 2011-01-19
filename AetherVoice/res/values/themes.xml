@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--<style>-->
+<!--	<item name="tabWidgetStyle">@android:style/Widget.TabWidget</item>-->
+<!--</style>-->
+<!--<style name="Widget.TabWidget">-->
+<!--        <item name="android:textAppearance">@style/TextAppearance.Widget.TabWidget</item>-->
+<!--        <item name="ellipsize">marquee</item>-->
+<!--        <item name="singleLine">true</item>-->
+<!--</style>  -->
+<!---->
+<!---->
+<!--<style name="TextAppearance.Widget.TabWidget">-->
+<!--    <item name="android:textSize">14sp</item>-->
+<!--    <item name="android:textStyle">normal</item>-->
+<!--    <item name="android:textColor">@android:color/tab_indicator_text</item>-->
+<!--</style>-->
+</resources>

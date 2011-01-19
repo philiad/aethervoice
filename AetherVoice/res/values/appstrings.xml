@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="app_title">Dialer</string>
+    <string name="tabname_contact_list">ContactListTab</string>
+    <string name="tabname_call_history">CallHistoryTab</string>
+    <string name="tabname_speed_dial">SpeedDialTab</string>
+    <string name="tabname_settings">SettingsTab</string>
+    <string name="tabname_directory">Directory</string>
+    <string name="tablabel_contact_list">Contact List</string>
+    <string name="tablabel_call_history">Call History</string>
+    <string name="tablabel_speed_dial">Speed Dial</string>
+    <string name="tablabel_settings">Settings</string>
+    <string name="tablabel_directory">Directory</string>
+    <string name="menu_memo">Toggle MemoPad</string>
+    <string name="menu_web">Toggle Yellow Page Browsing</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_full">Toggle Full Screen</string>   
+    <string name="menu_minimize">Toggle Minimize Screen</string>  
+    <string name="menu_settings">VoIP Settings</string>
+    <string name="menu_view_contact">View Contact</string>
+    <string name="menu_call_contact">Call Contact</string>
+    <string name="menu_edit_contact">Edit Contact</string>
+    <string name="menu_delete_contact">Delete Contact</string>
+    <string name="menu_star_contact">Add to Speed Dial List</string>
+    <string name="menu_unstar_contact">Remove from Speed Dial List</string>
+    <string name="menu_call_number">Call Number</string>
+    <string name="menu_edit_number">Edit Number Before Dial</string>
+    <string name="menu_add_number">Add to Contacts</string>
+    <string name="menu_remove_log">Remove Log</string>
+    <string name="header_contact_list">Contact List Entry Menu</string>
+    <string name="header_call_history">Call Log Entry Menu</string>
+    <string name="header_speed_dial">Speed Dial Entry Menu</string>
+    <string name="toast_logs_not_found">Android Call Logs Database not found</string>
+    <string name="toast_finish">Press Back once more to exit</string>
+    <string name="hint_search">Type to search contact</string>
+    <string name="button_voip">VoIP via SIP</string>
+    <string name="button_landline">Landline via PSTN</string>
+		<string name="button_mute">Mute</string>
+		<string name="button_speaker">Speaker</string>
+	  <string name="yellow_page_url">http://mobile.eyp.ph/</string>
+		<string name="calltype_received">Received</string>
+		<string name="calltype_dialed">Dialed</string>
+		<string name="calltype_missed">Missed</string>
+		<string name="calltype_unknown">Unknown</string>
+		<string name="unknown_contact_name">Unnamed Contact</string>
+		<string name="unknown_contact_fontsize">15</string>
+		
+		<!-- String Labels -->
+		
+		<!-- Account Settings -->
+		<string name="settings_label_username">Username</string>
+		<string name="settings_label_callerid">Caller Id</string>
+		<string name="settings_label_password">Password</string>
+		<string name="settings_label_server">Server</string>
+		<string name="settings_label_domain">Domain</string>
+		<string name="settings_label_port">Port</string>
+		<string name="settings_label_protocol">Protocol</string>
+		<string name="settings_label_connection">Connection</string>
+		<string name="settings_label_use_stun">Use STUN</string>
+		<string name="settings_label_stun_server">STUN Server</string>
+		<string name="settings_label_stun_port">STUN Port</string>
+		<string name="settings_label_calltype">Call Type</string>
+		<string name="settings_label_exclude">Exclude</string>
+		<string name="settings_label_auto_answer">Auto-Answer in use</string>
+		<string name="settings_label_auto_answer_od">Auto-Answer on demand</string>
+		<string name="settings_label_auto_answer_hs">Auto-Answer headset</string>
+		<string name="settings_label_ringtone">Ringtone</string>
+		<string name="settings_label_missed_call">Missed Call</string>
+		<string name="settings_label_voicemail">Voicemail</string>
+		<string name="settings_label_account">SIP Account Settings</string>
+		<string name="settings_label_call">Call Options</string>
+		<string name="settings_label_notifications">Notifications</string>
+		<string name="settings_text_registering">Registering...</string>
+		<string name="settings_text_unregistering">Unregistering...</string>
+		<string name="settings_default_username">1111</string>
+		<string name="settings_default_password">1111</string>
+		<string name="settings_default_server">124.107.150.58</string>
+		<string name="settings_default_port">5060</string>
+		<string name="settings_default_protocol">0</string>
+		<string name="settings_default_connection">0</string>
+		<string name="settings_default_stun">false</string>
+		<string name="settings_default_stun_server">stun.ekiga.net</string>
+		<string name="settings_default_stun_port">3478</string>
+		<string name="settings_default_calltype">0</string>
+		<string name="settings_default_exclude"></string>
+		<string name="settings_default_auto_answer">false</string>
+		<string name="settings_default_auto_answer_od">false</string>
+		<string name="settings_default_auto_answer_hs">false</string>
+		<string name="settings_default_missed_call">true</string>
+		<string name="settings_default_voicemail">false</string>
+		<string name="settings_default_ringtoneuri"></string>
+		<string name="settings_default_ringtonename">Silent Ringtone</string>
+		<string name="label_name">Name : </string>
+		<string name="key_label_sip">SIP</string>
+		<string name="key_label_default">default</string>
+		<string name="alert_message_name_exists_1">A contact with the name</string>
+		<string name="alert_message_name_exists_2">already exists, replace contact?</string>
+		<string name="alert_message_number_list">Choose number to dial</string>
+		<string name="alert_message_number_label">Phone Number Label</string>
+		<string name="alert_message_email_label">E-mail Address Label</string>
+		<string name="alert_message_custom_label">Custom Label</string>
+		<string name="alert_message_edit_number">Edit Phone Number</string>
+		<string name="alert_message_edit_email">Edit E-mail Address</string>
+		<string name="alert_message_photo_source">Enter directory path of image file relative to /sdcard/ (type default for default image)</string>
+		<string name="alert_message_invalid_image">Image cannot be decoded to Bitmap or no sdcard is detected.</string>
+		<string name="alert_message_ringtone">Select Ringtone: (Click to preview)</string>
+		<string name="alert_button_ok">OK</string>
+		<string name="alert_button_replace">Replace</string>
+		<string name="alert_button_dial">Dial selected Number</string>
+		<string name="alert_button_delete">Delete</string>
+		<string name="alert_button_cancel">Cancel</string>
+		<string name="alert_button_ringtone">Use Selected Ringtone</string>
+		<string name="alert_message_delete_1">Are you sure you want to delete</string>
+		<string name="alert_message_delete_2">from your contact list?</string>
+		<string name="alert_message_delete_all">Are you sure you want to delete all contacts?</string>
+		<string name="frame_label_number">Phone Numbers</string>
+		<string name="frame_label_email">E-mail Addresses</string>
+		<string name="tone_label_default">Default Tone</string>
+		<string name="tone_label_silent">Silent Tone</string>
+		<string name="type_home">Home</string>
+		<string name="type_mobile">Mobile</string>
+		<string name="type_work">Work</string>
+		<string name="type_fax_home">FAX Home</string>
+		<string name="type_fax_work">FAX Work</string>
+		<string name="type_pager">Pager</string>
+		<string name="type_other">Other</string>
+		<string name="type_custom">Custom</string>
+		<string name="button_remove">Remove</string>
+		<string name="toast_register">Must Register First</string>
+		<string name="toast_no_storage">External Storage not found</string>
+		<string name="toast_internet">Must Enable Internet Access First</string>
+		<string name="help_title">Help</string>
+		<string name="help_message_speed_dial">
+		Speed Dialling\n
+		\n
+		To Add A Speed Dial Number: \n
+		1. Go to Contact List, and search for the target number.\n
+		2. Press on the contact until a list of options appear. Choose Add to Speed Dial List option. The target contact will now appear on the Speed Dial list.\n
+		3. To remove a Speed Dial number, simply press on the contact until a list of options appear, then choose Remove from Speed Dial List.\n
+		4. To remove all Speed Dial contacts, just press on the remove all option on the bottom of the tab.\n
+		\n
+		</string>
+		<string name="help_message_contacts">
+		Contacts List\n
+		\n
+		Instructions: \n
+		1. To search for a contact, hit menu, and select search. Contact names that matches the typed characters will be shown below. \n
+		2. To delete all contacts, hit menu and select delete all. \n	
+		3. To add a contact, hit menu, and select add contact. In the edit profile screen, hit menu again and select save to save the changes. \n
+		4. To view a contact, select a contact from the list. 
+		5. To edit a contact, press a contact from the list, and a screen displays the information of the contact. Press Edit and edit the values, or long press a contact from the list, and choose the Edit Contact option. In the edit profile screen, hit menu again and select save to save the changes. \n
+		6. To change a contact\'s picture, simply edit the contact information. Hit the picture box. A new dialog box appears, revealing the storage. Search for the preferred picture. After choosing, press Save. \n
+		7. To call a contact, long press a user and select call, select the appropriate number if more than one number is stored. \n
+		8. To delete a contact, long press a contact from the list, and hit the delete option. \n
+		
+		\n
+		
+		</string>
+		<string name="help_message_call_history">
+		Call History\n
+		\n
+		Instructions: \n
+		1. To call the number in a call log entry, simply select the call log. \n
+		2. To add a new contact using that number, long press a call log entry and select add number to contacts. \n
+		3. To edit a number for dialing, long press a call log entry and select edit number before call. \n
+		4. To remove a call log entry, long press a call log entry and select remove from log. \n
+		5. To remove all call log entries, hit menu and select clear history. \n
+		\n
+		
+		</string>
+		<string name="help_message_dialer">
+		Dialer\n
+		\n
+		Instructions: \n
+		 For Landline Calls, either:\n
+		  1. Press the speakerbutton or raise the handset then dial the number.\n
+		  	Or...\n
+		  2. Press the dialbox, enter the number, then press Done.\n
+		Dialer must be using Line 1 for you to call a landline number.\n
+		  \n
+		 for VOIP Calls, either:\n
+		  1. Hit the text box to launch keyboard to type an alpha-numeric SIP address then press Done to call. \n
+		    Or...\n
+		  2. Press the speaker button first then, use the dial pad to conveniently input the SIP number manually. \n 
+		User must have a SIP account from a SIP provider. See Help Settings. 
+		\n
+		Another way of calling is selecting through the Contacts List. There is an option to call that number. Never forget what line should be used before calling.
+		\n
+		</string>
+		<string name="help_message_settings">
+		Settings\n
+		\n
+		Press the Menu button then press VOIP settings first. A screen will appear containing all the neccessary information.
+		\n
+		Legend: \n
+		1. Username = subscription username to SIP service provider \n
+		2. Password = subscription password to SIP service provider \n
+		3. Server = the domain name/IP address to register to the SIP provider \n
+		4. Port = the port number to be used for SIP calls, 5060 by default \n	
+		5. Protocol = the protocol used for SIP calls, UDP by default \n
+		6. Connection type = the kind of connection to be used for SIP call \n
+		7. Use STUN = enable STUN \n
+		8. STUN server = the domain name/IP address of the STUN server \n
+		9. STUN server = the port number of the STUN server \n
+		10. Call type = the kind of gateway to be used, PSTN is only supported in selected US-based SIP providers \n
+		11. Exclude = the exclude pattern, blank by default \n
+		12. Auto-answer = the auto answer feature \n
+		13. Auto-answer on demand = the auto answer feature using a toggle switch on the status bar \n
+		14. Auto-answer on demand = the auto answer feature when wired headset is connected \n
+		15. Missed Call = enable the missed call notification \n
+		16. Voicemail = enable the voicemail notification \n
+		17. Ringtone = ringtone of the application when receiving a SIP call \n
+	    \n 
+	    Instructions: \n
+		1. To register, press register button. All necessary information must be entered first.\n
+		2. To save settings, hit menu then select save settings. \n
+		3. To revert to recent saved settings, hit menu and select revert. \n
+		4. Pressing home will run the application on background, allowing the user to receive SIP calls even while running other programs. \n
+		\n
+		
+		</string>
+		<!-- STRINGS FOR PSTN CALLSCREEN -->
+		<string name="pstn_unknown_caller">Unknown Caller</string>
+		<string name="pstn_dialing">Dialing</string>
+		<string name="pstn_invalid_number">Invalid Number</string>
+		<string name="reminderdocked">Use onscreen dialpad when tablet is docked.</string>
+		<string name="reminderundocked">The tablet is not docked. VoIP calls only.</string>
+</resources>

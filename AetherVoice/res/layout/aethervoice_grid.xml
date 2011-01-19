@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <GridView 
+ 	xmlns:android="http://schemas.android.com/apk/res/android"
+ 	android:id="@+id/gridViewImage"
+	android:numColumns="3"
+	android:listSelector="@drawable/selector_background"
+	android:layout_width="360px"
+	android:layout_height="250px"
+	android:gravity="center"
+	android:padding="10px"
+	android:verticalSpacing="30px"
+	android:horizontalSpacing="20px"
+	android:columnWidth="30px"
+	android:stretchMode="columnWidth"/>
