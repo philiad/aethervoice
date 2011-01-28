@@ -13,19 +13,25 @@ import org.sipdroid.sipua.ui.Receiver;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.database.CursorJoiner;
+import android.database.MatrixCursor;
 import android.database.StaleDataException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.PhoneLookup;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -520,24 +526,24 @@ public class ContactListWindow extends Activity implements OnClickListener {
 		 */
 		@Override
 		public Cursor runQueryOnBackgroundThread(final CharSequence constraint) {
-			Cursor cursor = null;
+			Cursor cursorPeople;
 
 			if (getFilterQueryProvider() != null) {
-				cursor = getFilterQueryProvider().runQuery(constraint);
-				if (cursor != null && cursor.getCount() > 0)
-					constrainedCursor = cursor;
+				cursorPeople = getFilterQueryProvider().runQuery(constraint);
+				if (cursorPeople != null && cursorPeople.getCount() > 0)
+					constrainedCursor = cursorPeople;
 				else
 					constrainedCursor = null;
-				return cursor;
+				return cursorPeople;
 			}
 
-			StringBuilder buffer = null;
+			StringBuilder bufferPeople = null;
 			String[] args = null;
 			if (constraint != null) {
-				buffer = new StringBuilder();
-				buffer.append("UPPER(");
-				buffer.append(ViewContactInfo.DISPLAY_NAME);
-				buffer.append(") GLOB ?");
+				bufferPeople = new StringBuilder();
+				bufferPeople.append("UPPER(");
+				bufferPeople.append(ViewContactInfo.DISPLAY_NAME);
+				bufferPeople.append(") GLOB ?");
 				args = new String[] { "*"+constraint.toString().toUpperCase() + "*" };
 			}
 			
@@ -547,15 +553,16 @@ public class ContactListWindow extends Activity implements OnClickListener {
 						ContactsContract.Contacts.LOOKUP_KEY,
 						ContactsContract.Contacts.STARRED};
 
-			cursor = contentResolver.query(ViewContactInfo.getContactsUri(),
-					projection, buffer == null ? null : buffer.toString(), args,
-					ViewContactInfo.getSortOrderString());	
-			if (cursor != null && cursor.getCount() > 0)
-				constrainedCursor = cursor;
+			cursorPeople = contentResolver.query(ViewContactInfo.getContactsUri(),
+					projection, bufferPeople == null ? null : bufferPeople.toString(), args,
+					ViewContactInfo.getSortOrderString());
+			
+			if (cursorPeople != null && cursorPeople.getCount() > 0)
+				constrainedCursor = cursorPeople;
 			else
 				constrainedCursor = null;
 			
-			return cursor;
+			return cursorPeople;
 		}
 	}
 
@@ -633,10 +640,11 @@ public class ContactListWindow extends Activity implements OnClickListener {
 						new DialogInterface.OnClickListener() {
 							public void onClick(final DialogInterface dialog,
 									final int whichButton) {
-								ViewContactInfo.deleteContact(
+								/*ViewContactInfo.deleteContact(
 										getContentResolver(), id);
 								loadContactList();
-								CallHistoryWindow.setMustUpdateCallHistory();
+								CallHistoryWindow.setMustUpdateCallHistory();*/
+								new DeleteContact().execute(id);
 							}
 						}).setNegativeButton(R.string.alert_button_cancel,
 						new DialogInterface.OnClickListener() {
@@ -661,10 +669,11 @@ public class ContactListWindow extends Activity implements OnClickListener {
 				new DialogInterface.OnClickListener() {
 					public void onClick(final DialogInterface dialog,
 							final int whichButton) {
-						ViewContactInfo.deleteContact(getContentResolver(), -1);
+						/*ViewContactInfo.deleteContact(getContentResolver(), -1);
 						loadContactList();
 						SpeedDialWindow.setMustUpdateContactList(true);
-						CallHistoryWindow.setMustUpdateCallHistory();
+						CallHistoryWindow.setMustUpdateCallHistory();*/
+						new DeleteContact().execute(-1);
 					}
 				}).setNegativeButton(R.string.alert_button_cancel,
 				new DialogInterface.OnClickListener() {
@@ -904,7 +913,6 @@ public class ContactListWindow extends Activity implements OnClickListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> onResume");
 		if (Receiver.call_state != UserAgent.UA_STATE_IDLE)
 			Receiver.moveTop();
 		if (ContactListWindow.mustUpdateContactList == true) {
@@ -940,5 +948,37 @@ public class ContactListWindow extends Activity implements OnClickListener {
 			return true;
 		return super.onKeyDown(keyCode, event);*/
 		return false;
+	}
+	
+	private class DeleteContact extends AsyncTask<Integer, Void, Void>{
+		private ProgressDialog pDialog;
+		
+		@Override
+		protected void onPreExecute() {
+			pDialog = new ProgressDialog(context);
+			pDialog.setCancelable(false);
+			pDialog.setMessage("Deleting Contact");
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.show();
+			super.onPreExecute();
+		}
+
+		@Override
+		protected Void doInBackground(Integer... params) {
+			ViewContactInfo.deleteContact(getContentResolver(), params[0]);
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			pDialog.dismiss();
+			
+			loadContactList();
+			SpeedDialWindow.setMustUpdateContactList(true);
+			CallHistoryWindow.setMustUpdateCallHistory();
+			
+			super.onPostExecute(result);
+		}
+		
 	}
 }

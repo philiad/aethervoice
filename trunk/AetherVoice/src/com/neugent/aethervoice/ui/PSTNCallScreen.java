@@ -346,8 +346,7 @@ public class PSTNCallScreen {
 						// encode the phone number and build the filter URI
 						final Cursor contactListCursor = cr
 								.query(
-										Uri
-												.withAppendedPath(
+										Uri.withAppendedPath(
 														ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
 														Uri.encode(phoneNumber)),
 										null, null, null, ViewContactInfo

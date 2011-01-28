@@ -6,19 +6,26 @@
 
 package com.neugent.aethervoice.ui;
 
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.sipdroid.sipua.UserAgent;
 import org.sipdroid.sipua.ui.Receiver;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.BaseColumns;
 import android.provider.CallLog;
 import android.provider.Contacts;
@@ -40,6 +47,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 import com.neugent.aethervoice.R;
 
@@ -51,6 +59,9 @@ import com.neugent.aethervoice.R;
  */
 @SuppressWarnings("deprecation")
 public class CallHistoryWindow extends Activity {
+	
+	/** The Application context. **/
+	private Context mContext;
 
 	/** Displays the call history on the screen. */
 	private ListView callHistory;
@@ -72,6 +83,8 @@ public class CallHistoryWindow extends Activity {
 
 	/** The tab button that shows all missed call. **/
 	private Button btnShowMissed;
+
+	protected Handler myHandler;
 
 	/** The flag that indicates whether the callHistory must be updated. */
 	public static boolean mustUpdateCallHistory = false;
@@ -111,7 +124,9 @@ public class CallHistoryWindow extends Activity {
 	 * options.
 	 */
 	private static final int REMOVE_MENU_ITEM = Menu.FIRST + 4;
-
+	
+	private ArrayList<Boolean> isUnknown = new ArrayList<Boolean>();
+	
 	/**
 	 * Initializes the CallHistoryWindow and its contents. Called when the
 	 * CallHistoryWindow tab is pressed for the first time.
@@ -121,10 +136,14 @@ public class CallHistoryWindow extends Activity {
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		mContext = this;
+		
 		setContentView(R.layout.call_history);
 		initViews();
+		
 	}
-
+	
 	/**
 	 * Initializes callHistory, its content and its listeners.
 	 * 
@@ -135,51 +154,19 @@ public class CallHistoryWindow extends Activity {
 	 */
 	private void initViews() {
 		callHistory = (ListView) findViewById(R.id.list_history);
-
+		
 		btnShowAll = (Button) findViewById(R.id.btn_show_all);
 		btnShowDialed = (Button) findViewById(R.id.btn_show_dialed);
 		btnShowReceived = (Button) findViewById(R.id.btn_show_received);
 		btnShowMissed = (Button) findViewById(R.id.btn_show_missed);
 		
-		System.out.println("+++++++++++++"+CallLog.Calls.CONTENT_URI);
-
+//		System.out.println("+++++++++++++"+CallLog.Calls.CONTENT_URI);
+		
 		((Button) findViewById(R.id.btn_clear_all))
 				.setOnClickListener(new OnClickListener() {
 					public void onClick(final View v) {
-
-						if (mode == CallHistoryWindow.MODE_SHOW_ALL)
-							getContentResolver().delete(
-									CallLog.Calls.CONTENT_URI, null, null);
-						else {
-							final Cursor callhistoryCursor = getContentResolver()
-									.query(
-											CallLog.Calls.CONTENT_URI,
-											new String[] { BaseColumns._ID,
-													CallLog.Calls.NUMBER,
-													CallLog.Calls.TYPE,
-													CallLog.Calls.DATE,
-													CallLog.Calls.DURATION },
-											getSelection(mode), null,
-											CallLog.Calls.DEFAULT_SORT_ORDER);
-
-							startManagingCursor(callhistoryCursor);
-
-							if (callhistoryCursor != null
-									&& callhistoryCursor.moveToFirst())
-								do
-									getContentResolver()
-											.delete(
-													CallLog.Calls.CONTENT_URI,
-													BaseColumns._ID
-															+ "="
-															+ callhistoryCursor
-																	.getString(callhistoryCursor
-																			.getColumnIndex(BaseColumns._ID)),
-													null);
-								while (callhistoryCursor.moveToNext());
-						}
-
-						loadCallHistory(mode);
+					if (callHistory.getChildCount() > 0)
+						getDialog().show();
 					}
 				});
 
@@ -212,32 +199,75 @@ public class CallHistoryWindow extends Activity {
 		});
 
 		selectTab(mode);
-
+		
 		// Sets the listeners for the call history
 		callHistory.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(final AdapterView<?> arg0, final View v,
 					final int position, final long id) {
-				/**
-				 * A cursor that contains details of a single call history
-				 * entry.
-				 */
-				final Cursor callhistoryEntryCursor = (Cursor) callHistoryAdapter
-						.getItem(position);
-				startManagingCursor(callhistoryEntryCursor);
+				if(!isUnknown.get(position)){
+					/** A cursor that contains details of a single call history entry.
+					 */
+					final Cursor callhistoryEntryCursor = (Cursor) callHistoryAdapter
+							.getItem(position);
+					startManagingCursor(callhistoryEntryCursor);
 
-				AetherVoice.setInput(callhistoryEntryCursor
-						.getString(callhistoryEntryCursor
-								.getColumnIndex(CallLog.Calls.NUMBER)));
-				if (Dialer.isVoip)
-					AetherVoice.dialer.dial(callhistoryEntryCursor.getString(callhistoryEntryCursor.getColumnIndex(CallLog.Calls.NUMBER)), getApplicationContext());
-				else
-					// Dialer.btnCall.performClick();
-					AetherVoice.dialer.dialPSTN(callhistoryEntryCursor
+					/*AetherVoice.setInput(callhistoryEntryCursor
 							.getString(callhistoryEntryCursor
-									.getColumnIndex(CallLog.Calls.NUMBER)));
+									.getColumnIndex(CallLog.Calls.NUMBER)));*/
+				String number = callhistoryEntryCursor
+				.getString(callhistoryEntryCursor
+						.getColumnIndex(CallLog.Calls.NUMBER));
+				
+				if (number.equals("-1")){ 
+					Toast.makeText(getApplicationContext(), "Invalid Number.", Toast.LENGTH_SHORT).show();
+				}
+				else {
+					AetherVoice.setInput(number);
+					if (Dialer.isVoip)
+						AetherVoice.dialer.dial(number, getApplicationContext());
+					else
+						// Dialer.btnCall.performClick();
+						AetherVoice.dialer.dialPSTN(number);
+				}
+				
+//				AetherVoice.setInput(callhistoryEntryCursor
+//						.getString(callhistoryEntryCursor
+//								.getColumnIndex(CallLog.Calls.NUMBER)));
+//				if (Dialer.isVoip)
+//					AetherVoice.dialer.dial(callhistoryEntryCursor.getString(callhistoryEntryCursor.getColumnIndex(CallLog.Calls.NUMBER)), getApplicationContext());
+//				else
+//					// Dialer.btnCall.performClick();
+//					AetherVoice.dialer.dialPSTN(callhistoryEntryCursor
+//							.getString(callhistoryEntryCursor
+//									.getColumnIndex(CallLog.Calls.NUMBER)));					if (Dialer.isVoip)
+						/*AetherVoice.dialer.dial(callhistoryEntryCursor.getString(callhistoryEntryCursor.getColumnIndex(CallLog.Calls.NUMBER)), getApplicationContext());
+					else
+						// Dialer.btnCall.performClick();
+						AetherVoice.dialer.dialPSTN(callhistoryEntryCursor
+								.getString(callhistoryEntryCursor
+										.getColumnIndex(CallLog.Calls.NUMBER)));*/
+				}
 			}
 		});
+		
+		callHistory.setOnItemLongClickListener(new OnItemLongClickListener() {
 
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				//we just need the position of the long pressed item
+				if(isUnknown.get(position)){
+					final Cursor callhistoryEntryCursor = (Cursor) callHistoryAdapter.getItem(position);
+					startManagingCursor(callhistoryEntryCursor);
+					removeLogDialog(callhistoryEntryCursor).show();
+					return true;
+				}else{
+					return false;
+				}
+				
+			}
+		});
+		
 		callHistory
 				.setOnCreateContextMenuListener((new OnCreateContextMenuListener() {
 					/**
@@ -259,7 +289,71 @@ public class CallHistoryWindow extends Activity {
 					}
 				}));
 	}
+	private Integer getId(){
+		Integer[] modes = {R.string.call_clear_all, R.string.call_clear_dialled, R.string.call_clear_received, R.string.call_clear_missed };
+		return modes[mode];
+	}
+	
+	private AlertDialog getDialog(){
+		final AlertDialog.Builder confirmDialog = new AlertDialog.Builder(this)
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+			 int whichButton) {
+					clearLogs();
+				}
+			})
+		.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+					int whichButton) {
+			}
+		});
+		confirmDialog.setTitle(getId());
+//		confirmDialog.setTitle("Clear Call History?");
+		
+		return confirmDialog.create();
+	}
+	
+	/**	Clears the call history window depending on the tab **/
+	private void clearLogs(){
+		/*if (mode == CallHistoryWindow.MODE_SHOW_ALL)
+			getContentResolver().delete(
+					CallLog.Calls.CONTENT_URI, null, null);
+		else {
+			final Cursor callhistoryCursor = getContentResolver()
+					.query(
+							CallLog.Calls.CONTENT_URI,
+							new String[] { BaseColumns._ID,
+									CallLog.Calls.NUMBER,
+									CallLog.Calls.TYPE,
+									CallLog.Calls.DATE,
+									CallLog.Calls.DURATION },
+							getSelection(mode), null,
+							CallLog.Calls.DEFAULT_SORT_ORDER);
 
+			startManagingCursor(callhistoryCursor);
+
+			if (callhistoryCursor != null
+					&& callhistoryCursor.moveToFirst())
+				do
+					getContentResolver()
+							.delete(
+									CallLog.Calls.CONTENT_URI,
+									BaseColumns._ID
+											+ "="
+											+ callhistoryCursor
+													.getString(callhistoryCursor
+															.getColumnIndex(BaseColumns._ID)),
+									null);
+				while (callhistoryCursor.moveToNext());*/
+			
+			new ClearHistory().execute("-1");
+		/*}*/
+
+		/*loadCallHistory(mode);*/
+		/*callHistoryAdapter.notifyDataSetChanged();*/
+	}
+	
 	/**
 	 * Raises and lowers the mustUpdateContactList flag using a boolean input.
 	 * 
@@ -268,8 +362,8 @@ public class CallHistoryWindow extends Activity {
 	 */
 	public static void setMustUpdateCallHistory() {
 		CallHistoryWindow.mustUpdateCallHistory = true;
-		if (callHistoryAdapter!=null)
-			callHistoryAdapter.notifyDataSetChanged(); //TODO: clear data later --AJ added if statement to avoid null pointer
+		if (callHistoryAdapter != null)
+			callHistoryAdapter.notifyDataSetChanged();
 	}
 
 	/**
@@ -281,7 +375,7 @@ public class CallHistoryWindow extends Activity {
 	 * @see #callHistoryAdapter
 	 * @see #callHistory
 	 */
-	private void loadCallHistory(final int newMode) {
+	public void loadCallHistory(final int newMode) {
 
 		mode = newMode;
 
@@ -297,20 +391,21 @@ public class CallHistoryWindow extends Activity {
 				CallLog.Calls.DEFAULT_SORT_ORDER);
 
 		startManagingCursor(callhistoryCursor);
-
+		
 		if (callhistoryCursor != null) {
-			if (callhistoryCursor.getCount() > 0) {
+			/*if (callhistoryCursor.getCount() > 0) {*/ //removed so that the cursor will not be null
 				callHistoryAdapter = new CallHistoryAdapter(
 						getApplicationContext(), callhistoryCursor);
 				callHistory.setAdapter(callHistoryAdapter);
 				callHistory.setVisibility(View.VISIBLE);
-			} else
-				callHistory.setVisibility(View.INVISIBLE);
+			/*} else
+				callHistory.setVisibility(View.INVISIBLE);*/
 		} else {
 			callHistory.setVisibility(View.INVISIBLE);
 			Toast.makeText(getApplicationContext(),
 					R.string.toast_logs_not_found, Toast.LENGTH_SHORT).show();
 		}
+		CallHistoryWindow.mustUpdateCallHistory = false;
 	}
 
 	/**
@@ -323,8 +418,7 @@ public class CallHistoryWindow extends Activity {
 	 */
 	private void selectTab(final int newMode) {
 
-		btnShowAll
-				.setBackgroundResource((newMode == CallHistoryWindow.MODE_SHOW_ALL) ? (R.drawable.btn_show_all_f2)
+		btnShowAll.setBackgroundResource((newMode == CallHistoryWindow.MODE_SHOW_ALL) ? (R.drawable.btn_show_all_f2)
 						: (R.drawable.btn_show_all_bg));
 
 		btnShowDialed
@@ -367,7 +461,7 @@ public class CallHistoryWindow extends Activity {
 	 *        callHistory with necessary details.
 	 * @author Wyndale Wong
 	 */
-	private class CallHistoryAdapter extends CursorAdapter {
+	private class CallHistoryAdapter extends CursorAdapter{
 
 		/** The inflater object used to inflate views from resource. */
 		private final LayoutInflater layoutInflater;
@@ -392,7 +486,13 @@ public class CallHistoryWindow extends Activity {
 					R.layout.call_history_entry, null);
 			return newView;
 		}
-
+		
+		@Override
+		public void notifyDataSetChanged() {
+			super.notifyDataSetChanged();
+			isUnknown.clear();
+		}
+		
 		/**
 		 * Binds an existing view to the data pointed to by callhistoryCursor.
 		 * 
@@ -421,16 +521,26 @@ public class CallHistoryWindow extends Activity {
 			final String name = CallHistoryWindow.getNameString(context,
 					callhistoryEntryCursor.getString(callhistoryEntryCursor
 							.getColumnIndex(CallLog.Calls.NUMBER)));
-
+			
 			if (name.equals("")) {
 				String number = callhistoryEntryCursor
 						.getString(callhistoryEntryCursor
 								.getColumnIndex(CallLog.Calls.NUMBER));
-				if (number.equals("-1"))
+				if (number.equals("-1")){
 					number = "UNKNOWN";
+					/*view.setClickable(false);*/
+					/*view.setLongClickable(false);*/
+					
+					isUnknown.add(true);
+				}else{
+					isUnknown.add(false);
+				}
 				nameText.setText(number);
-			} else
+			} else{
 				nameText.setText(name);
+				isUnknown.add(false);
+			}
+				
 
 			// if(callhistoryEntryCursor.getPosition()%2 == 0) {
 			// view.setBackgroundResource(R.drawable.panel_entry_1);
@@ -522,6 +632,8 @@ public class CallHistoryWindow extends Activity {
 		return 0;
 	}
 	
+	final static String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"}; 
+	
 	/**
 	 * Converts date in milliseconds to date string
 	 * 
@@ -529,20 +641,35 @@ public class CallHistoryWindow extends Activity {
 	 *            date in milliseconds since January 01, 1970 00:00:00am
 	 * @return the date in the format of MMM DD HH:MM:SS of type String
 	 */
-	private static String getDateString(final Context context, final Long timeInMilliS) {
-		final String time = Settings.System.getString(context.getContentResolver(),Settings.System.TIME_12_24);
-		DateFormat formatter;
+	private static String getDateString(Context context, Long timeInMilliS) {
+		System.out.println("Get DATE STRING>>>" + timeInMilliS);
+		
+		final String time = android.provider.Settings.System.getString(context.getContentResolver(),Settings.System.TIME_12_24);
+		DateFormat formatter = null;
+		
 		final Calendar calendar = Calendar.getInstance();
 		
 		calendar.setTimeInMillis(timeInMilliS);
-		if (time.equals("24")){
+		/*if (time.equals("24")){
 			formatter = new SimpleDateFormat("MMM-dd-yyyy HH:mm:ss");
 		}else {
-			formatter = new SimpleDateFormat("MMM-dd-yyyy hh:mm:ss");
+			formatter = new SimpleDateFormat("MMM-dd-yyyy hh:mm:ss");*/
+		
+		Date date = new Date(timeInMilliS);
+		
+		if (time == null ){
+			formatter = new SimpleDateFormat(" dd, yyyy hh:mm aa");
+		}else{
+			if (time.equals("24")){
+				formatter = new SimpleDateFormat(" dd, yyyy HH:mm:ss");
+			}else {
+				formatter = new SimpleDateFormat(" dd, yyyy hh:mm aa");
+			}
 		}
 		
-		
-		return formatter.format(calendar.getTime());	
+		SimpleDateFormat formatterMonth = new SimpleDateFormat( "MMM" );
+		System.out.println("Get DATE STRING:::"+ formatter.format(calendar.getTime()));
+		return months[Integer.parseInt(formatterMonth.format(date))-1]+formatter.format(calendar.getTime());
 	}
 
 //	/**
@@ -594,14 +721,20 @@ public class CallHistoryWindow extends Activity {
 					.getItem(menuInfo.position);
 			startManagingCursor(callhistoryEntryCursor);
 
-			AetherVoice.setInput(callhistoryEntryCursor
-					.getString(callhistoryEntryCursor
-							.getColumnIndex(CallLog.Calls.NUMBER)));
+			String number = callhistoryEntryCursor
+			.getString(callhistoryEntryCursor
+					.getColumnIndex(CallLog.Calls.NUMBER));
+			if (number.equals("-1")){ 
+				Toast.makeText(getApplicationContext(), "Invalid Number.", Toast.LENGTH_SHORT).show();
+			}
+			else {
+			AetherVoice.setInput(number);
 			if (Dialer.isVoip)
-				AetherVoice.dialer.dial(callhistoryEntryCursor.getString(callhistoryEntryCursor.getColumnIndex(CallLog.Calls.NUMBER)), getApplicationContext());
+				AetherVoice.dialer.dial(number, getApplicationContext());
 			else
 				// Dialer.btnCall.performClick();
-				AetherVoice.dialer.dialPSTN(callhistoryEntryCursor.getString(callhistoryEntryCursor.getColumnIndex(CallLog.Calls.NUMBER)));
+				AetherVoice.dialer.dialPSTN(number);
+			}
 			break;
 		}
 		case EDIT_MENU_ITEM: {
@@ -684,22 +817,52 @@ public class CallHistoryWindow extends Activity {
 			final Cursor callhistoryEntryCursor = (Cursor) callHistoryAdapter
 					.getItem(menuInfo.position);
 			startManagingCursor(callhistoryEntryCursor);
-
-			getContentResolver().delete(
-					CallLog.Calls.CONTENT_URI,
-					BaseColumns._ID
-							+ "="
-							+ callhistoryEntryCursor
-									.getString(callhistoryEntryCursor
-											.getColumnIndex(BaseColumns._ID)),
-					null);
-			loadCallHistory(mode);
+			removeLogDialog(callhistoryEntryCursor).show();
+			
 			break;
 		}
 		}
 		return super.onContextItemSelected(item);
 	}
-
+	
+	private AlertDialog removeLogDialog (final Cursor callhistoryEntryCursor){
+		String number = callhistoryEntryCursor.getString(callhistoryEntryCursor.getColumnIndex(CallLog.Calls.NUMBER));
+		String name = getNameString(this, number);
+		final AlertDialog.Builder removeDialog = new AlertDialog.Builder(this)
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.setTitle("Remove "+ name + " from Call History Logs?")
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+			 int whichButton) {
+				removeItemLog(callhistoryEntryCursor);
+				}
+			})
+		.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+					int whichButton) {
+			}
+		});
+		return removeDialog.create();
+	
+	}
+	
+	private void removeItemLog(Cursor callhistoryEntryCursor){
+		/*getContentResolver().delete(
+				CallLog.Calls.CONTENT_URI,
+				BaseColumns._ID
+						+ "="
+						+ callhistoryEntryCursor
+								.getString(callhistoryEntryCursor
+										.getColumnIndex(BaseColumns._ID)),
+				null);
+		loadCallHistory(mode);
+		callHistoryAdapter.notifyDataSetChanged();*/
+		
+		new ClearHistory().execute(callhistoryEntryCursor
+				.getString(callhistoryEntryCursor
+						.getColumnIndex(BaseColumns._ID)));
+	}
+	
 	/**
 	 * Called when the tab is reselected, and upon doing so,
 	 * refreshCallHistory() is then called if the mustUpdateCallHistory is
@@ -714,7 +877,7 @@ public class CallHistoryWindow extends Activity {
 		if (Receiver.call_state != UserAgent.UA_STATE_IDLE)
 			Receiver.moveTop();
 
-		if (CallHistoryWindow.mustUpdateCallHistory == true) {
+		if (CallHistoryWindow.mustUpdateCallHistory) {
 			loadCallHistory(mode);
 			CallHistoryWindow.mustUpdateCallHistory = false;
 		}
@@ -753,5 +916,72 @@ public class CallHistoryWindow extends Activity {
 			return true;
 		return super.onKeyDown(keyCode, event);*/
 		return false;
+	}
+	
+	private class ClearHistory extends AsyncTask<String, Void, Void>{
+		
+		private ProgressDialog pDialog;
+		
+		@Override
+		protected void onPreExecute() {
+			pDialog = new ProgressDialog(mContext);
+			pDialog.setCancelable(false);
+			pDialog.setMessage("Clearing History");
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.show();
+			super.onPreExecute();
+		}
+
+		@Override
+		protected Void doInBackground(String... params) {
+			if(params[0].equals("-1")){
+				if (mode == CallHistoryWindow.MODE_SHOW_ALL)
+					getContentResolver().delete(
+							CallLog.Calls.CONTENT_URI, null, null);
+				else{
+					final Cursor callhistoryCursor = getContentResolver().query(
+							CallLog.Calls.CONTENT_URI,
+							new String[] { BaseColumns._ID,
+									CallLog.Calls.NUMBER,
+									CallLog.Calls.TYPE,
+									CallLog.Calls.DATE,
+									CallLog.Calls.DURATION },
+							getSelection(mode), null,
+							CallLog.Calls.DEFAULT_SORT_ORDER);
+
+					startManagingCursor(callhistoryCursor);
+
+					if (callhistoryCursor != null && callhistoryCursor.moveToFirst())
+						do{
+							getContentResolver().delete(
+									CallLog.Calls.CONTENT_URI,
+									BaseColumns._ID
+											+ "="
+											+ callhistoryCursor
+													.getString(callhistoryCursor
+															.getColumnIndex(BaseColumns._ID)),
+									null);
+							publishProgress();
+						}
+						while (callhistoryCursor.moveToNext());
+				}
+			}else{
+				getContentResolver().delete(CallLog.Calls.CONTENT_URI, BaseColumns._ID + "=" + params[0],null);
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onProgressUpdate(Void... values) {
+			super.onProgressUpdate(values);
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			pDialog.dismiss();
+			callHistoryAdapter.notifyDataSetChanged();
+			super.onPostExecute(result);
+		}
+		
 	}
 }

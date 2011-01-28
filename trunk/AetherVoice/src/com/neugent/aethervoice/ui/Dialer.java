@@ -6,22 +6,44 @@
  */
 package com.neugent.aethervoice.ui;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Random;
+import java.util.Vector;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.http.util.ByteArrayBuffer;
 import org.miscwidgets.widget.Panel;
 import org.miscwidgets.widget.Panel.OnPanelListener;
 import org.sipdroid.media.RtpStreamReceiver;
 import org.sipdroid.sipua.UserAgent;
 import org.sipdroid.sipua.phone.Connection;
 import org.sipdroid.sipua.ui.Receiver;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.CallLog;
+import android.provider.Contacts.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -48,6 +70,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.neugent.aethervoice.R;
+import com.neugent.aethervoice.xml.parse.BannerHandler;
+import com.neugent.aethervoice.xml.parse.BannerDataset;
 
 /**
  * @class Dialer
@@ -65,6 +89,9 @@ public class Dialer implements OnClickListener, OnTouchListener {
 
 	/** The audio interface manager. **/
 	private final AudioManager audioManager;
+	
+	/** The thread handler. **/
+	private final Handler handler;
 	
 	// ************************************************************** //
 	// *************************** VIEWS **************************** //
@@ -88,9 +115,6 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	/** The Ad image view. **/
 	private ImageView adImage;
 	
-	/** The thread handler. **/
-	private final Handler handler;
-	
 	/** The mute button **/
 	private Button btnMute;
 	
@@ -103,9 +127,6 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	// ************************************************************** //
 	// *************************** FLAGS **************************** //
 	// ************************************************************** //
-	/** The value of the saved volume. **/
-	private int savedVolume;
-
 	/** The flag that indicates whether the application is in mute mode. **/
 	public boolean isMute = false;
 
@@ -127,10 +148,14 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	/** The flag that **/
 	private boolean runThread = false;
 	
+	/** Determines if the number should be added to the dial box**/
 	private boolean onStartCall;
-
+	
+	// ************************************************************** //
+	// *************************** OTHERS *************************** //
+	// ************************************************************** //
 	/** The Ad image randomization engine thread. **/
-	private Thread adEngineThread;
+	public static Thread adEngineThread;
 
 	/** The array of ad image weights. **/
 	private int[] adWeights;
@@ -138,6 +163,9 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	/** The list of ad image drawable id's. **/
 	private final int[] adDrawableIds = new int[] { R.drawable.ad_1,
 			R.drawable.ad_2, R.drawable.ad_3, R.drawable.ad_4 };
+	
+	/** The value of the saved volume. **/
+	/*private int savedVolume;*/
 
 	/** The last number dialed. **/
 	private static String mLastNumber;
@@ -149,9 +177,15 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	/** The message to be sent to the mhandler to know that we are dialing in PSTN.*/
 	private static final int DIAL_PSTN = 0;
 
-	/**  for voip thread*/
+	/** for voip thread*/
 	private int timeElapsed = 0;
 	
+	private Vector<BannerDataset> parsedExampleDataSet;
+	
+	private int myAdCounter;
+	
+	private Handler bannerHandler;
+
 	/**
 	 * The constructor method of the Dialer class.
 	 * 
@@ -163,8 +197,11 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	public Dialer(final Context context) {
 		this.context = context;
 		handler = getHandler();
+		bannerHandler = getBannerHandler();
 		audioManager = (AudioManager) context
 				.getSystemService(Context.AUDIO_SERVICE);
+		
+		isVoip = false;
 	}
 
 	/**
@@ -204,15 +241,15 @@ public class Dialer implements OnClickListener, OnTouchListener {
 			@Override
 			public void afterTextChanged(Editable s) {
 				timeElapsed = 0;
-				if(AetherVoice.pstnCallScreen!=null && AetherVoice.pstnCallScreen.getCallerLength() != dialBox.getText().toString().length()){
-					Log.d("AetherVoice",">>>>>>>>>>>>>>>>>>>> there is a difference!!! confirming if will add to UI");
+				if(AetherVoice.pstnCallScreen!=null	&& !AetherVoice.isIncoming && (AetherVoice.isOngoing || AetherVoice.isOutgoing)
+						 && AetherVoice.pstnCallScreen.getCallerLength() != dialBox.getText().toString().length()){
 					if (/*AetherVoice.pstnCallScreen.mCallDuration < 20 
-							&&*/ !AetherVoice.pstnCallScreen.isContactFound
-							&& !AetherVoice.isIncoming)
+							&&*/ !AetherVoice.pstnCallScreen.isContactFound)
 						AetherVoice.pstnCallScreen .updateCaller(AetherVoice.dialer.dialBox
 										.getText().toString(), PSTNCallScreen.MODE_ONGOING_CALL);
 
 					AetherVoice.pstnCallScreen.updateStatusUI(PSTNCallScreen.MODE_ONGOING_CALL);
+					
 				}
 			}
 
@@ -246,9 +283,12 @@ public class Dialer implements OnClickListener, OnTouchListener {
 					String target = v.getText().toString();
 //					if(target.length() > 0)
 						if(isVoip){
-							dial(target, context);
-							timeElapsed = 0;
-							toggleVoipThread(false);
+							if (SettingsWindow.isRegistered){
+								dial(target, context);
+								timeElapsed = 0;
+								toggleVoipThread(false);
+							} else 
+								Toast.makeText(context, R.string.toast_register, Toast.LENGTH_SHORT).show();
 						}else{
 							dialPSTN(dialBox.getText().toString());
 						}
@@ -368,12 +408,37 @@ public class Dialer implements OnClickListener, OnTouchListener {
 		});
 		
 		//remove to fix switching problem - Dennis 20110112
-		//switchtoVOIP(isVoip);
+//		switchtoVOIP(isVoip);
 
 		adWeights = context.getResources().getIntArray(R.array.ad_weights);
+		
+		myAdCounter = -1;
+		
+		adImage.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				if (parsedExampleDataSet != null && parsedExampleDataSet.size() > 0) {
+					if (myAdCounter >= 0) {
+						System.out.println(">>>>>>>>>>>> "+myAdCounter);
+						if (parsedExampleDataSet.get(myAdCounter).getPage_url() == null) {
+							Toast.makeText(context, "URL not found!", Toast.LENGTH_SHORT).show();
+						} else {							
+							Intent browserIntent = new Intent(Intent.ACTION_VIEW, 
+									Uri.parse(parsedExampleDataSet.get(myAdCounter).getPage_url())); 
+									context.startActivity(browserIntent); 
+						}
+					}
+				} 
+			}
+			
+		});
+		
+		_FakeX509TrustManager.allowAllSSL();
 
 		adEngineThread = getAdEngineThread();
 		adEngineThread.start();
+		
+		
 
 		return dialerView;
 	}
@@ -385,6 +450,7 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	
 	
 	public void undockedReminder(boolean flag){
+		/*AetherVoice.appIsDocked = flag;*/
 		if(flag){
 			if(!isVoip && AetherVoice.isCalling){
 				btnCall.setBackgroundResource(R.drawable.call);
@@ -592,8 +658,12 @@ public class Dialer implements OnClickListener, OnTouchListener {
 			if (Dialer.mLastNumber != null && Dialer.mLastNumber.length() > 0){
 				dialBox.setText(dialString);
 				dialBox.setSelection(dialBox.length());
-				if (Dialer.isVoip)
-					dial(Dialer.mLastNumber, context);
+				if (Dialer.isVoip){
+					if (SettingsWindow.isRegistered) 
+						dial(Dialer.mLastNumber, context);
+					else 
+						Toast.makeText(context, R.string.toast_register, Toast.LENGTH_SHORT).show();
+				}
 				else
 					dialPSTN(Dialer.mLastNumber);
 				runThread = false;
@@ -646,7 +716,7 @@ public class Dialer implements OnClickListener, OnTouchListener {
 					} else if (AetherVoice.isIncoming)
 						endCall(true, false);
 					else if (AetherVoice.isOutgoing) {
-						/** CURRENTLY NOT BEING USED */
+						/** CURRENTLY NOT BEING USED **/
 						endCall(false, true);
 
 						Connection.addCall(null, context, dialString, false,
@@ -656,8 +726,10 @@ public class Dialer implements OnClickListener, OnTouchListener {
 
 					if (!isOnMHS) {
 						dialString = "";
-						dialBox.setText("");
-						dialBox.setSelection(dialBox.length());
+						
+						//this should be handled by end call
+						/*dialBox.setText("");
+						dialBox.setSelection(dialBox.length());*/
 					}
 					Dialer.isNotDialing = true;
 
@@ -681,61 +753,68 @@ public class Dialer implements OnClickListener, OnTouchListener {
 				btnCall.setBackgroundResource(R.drawable.end);
 				
 				if (Dialer.isVoip) {
-					Dialer.isSpeaker = true;
+					if(SettingsWindow.isRegistered){
+						Dialer.isSpeaker = true;
 
-					
-//					dialString = ""; 
-//					dialBox.setText("");
-//					dialBox.setSelection(dialBox.length());
-					
-					// for voip call
-					if (Receiver.call_state == UserAgent.UA_STATE_INCOMING_CALL) {
-						final Message m = new Message();
-						m.what = CallHandler.MSG_INCALL_ANSWER_SPEAKER;
-						m.obj = context;
-						AetherVoice.mHandler.sendMessage(m);
-
-						// for VOIP speaker
-						if (RtpStreamReceiver.speakermode == AudioManager.MODE_NORMAL)
-							Receiver.engine(context).speaker(AudioManager.MODE_IN_CALL);
-
-					} else if (Receiver.call_state == UserAgent.UA_STATE_IDLE) {
 						
-						/** 
-						 * call thread here
-						 * w8 for input
-						 * autodial after 10idle seconds*/
-						// XXX: changed
-						if (!AetherVoice.isCalling){
-							if (dialString.length() > 0)
-								dial(dialString, context);
-						else{
-							toggleVoipThread(true);
-							voipDialHandler = new Handler(){
-							@Override
-							public void handleMessage(Message msg){
-								
-								if (msg.what == 0){ 
-									
-										((InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(dialBox.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-//										System.out.println("Dialing+-=-=-=-=-=-=-=-=-=-+ " + dialBox.getText());
-										dial(dialBox.getText().toString(), context);
-										
-										toggleVoipThread(false);
+//						dialString = ""; 
+//						dialBox.setText("");
+//						dialBox.setSelection(dialBox.length());
+						
+						// for voip call
+						if (Receiver.call_state == UserAgent.UA_STATE_INCOMING_CALL) {
+							final Message m = new Message();
+							m.what = CallHandler.MSG_INCALL_ANSWER_SPEAKER;
+							m.obj = context;
+							AetherVoice.mHandler.sendMessage(m);
+
+							// for VOIP speaker
+							if (RtpStreamReceiver.speakermode == AudioManager.MODE_NORMAL)
+								Receiver.engine(context).speaker(AudioManager.MODE_IN_CALL);
+						} else if (Receiver.call_state == UserAgent.UA_STATE_IDLE) {
+							
+							/** 
+							 * call thread here
+							 * w8 for input
+							 * autodial after 10idle seconds*/
+							// XXX: changed
+							if (!AetherVoice.isCalling){
+								if (dialString.length() > 0)
+									dial(dialString, context);
+								else{
+									toggleVoipThread(true);
+									voipDialHandler = new Handler(){
+										@Override
+										public void handleMessage(Message msg){
+											if (msg.what == 0){ 
+													((InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(dialBox.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+		//											System.out.println("Dialing+-=-=-=-=-=-=-=-=-=-+ " + dialBox.getText());
+													dial(dialBox.getText().toString(), context);
+													
+													toggleVoipThread(false);
+											}
+										}
+									};
 								}
 							}
-						};
-						
-						}
-						}
-						
-						// for VOIP speaker
-						if (RtpStreamReceiver.speakermode == AudioManager.MODE_NORMAL)
-							Receiver.engine(context).speaker(AudioManager.MODE_IN_CALL);
-						
-					} else if (Receiver.call_state == UserAgent.UA_STATE_INCALL
-							|| Receiver.call_state == UserAgent.UA_STATE_HOLD)
-						Receiver.engine(context).togglehold();
+							
+							// for VOIP speaker
+							if (RtpStreamReceiver.speakermode == AudioManager.MODE_NORMAL)
+								Receiver.engine(context).speaker(AudioManager.MODE_IN_CALL);
+							
+						} else if (Receiver.call_state == UserAgent.UA_STATE_INCALL || Receiver.call_state == UserAgent.UA_STATE_HOLD)
+							Receiver.engine(context).togglehold();
+					}else{
+						Toast.makeText(context,	context.getString(R.string.toast_register), 3000).show();
+						dialBox.setText("");
+						switchtoCall(false);
+					}
+//					} else {
+//						Toast.makeText(context, R.string.toast_register, Toast.LENGTH_LONG).show();
+//						callStatus = false;
+//						btnCall.setBackgroundResource(R.drawable.call);
+//						mToneGenerator.stopTone();
+//					}
 				} else if (AetherVoice.isIncoming && !AetherVoice.isOngoing) { // is on call session
 
 					try {
@@ -790,12 +869,12 @@ public class Dialer implements OnClickListener, OnTouchListener {
 						AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_HOLD);
 				} else if (isOnMHS || !AetherVoice.isCalling
 						&& !AetherVoice.isOutgoing && !AetherVoice.isIncoming) {
-					if (dialString.length() > 0){
+					/*if (dialString.length() > 0){
 						// mLastNumber = dialString;
 						// dialPSTN(dialString);
 						dialBox.setText("");
 						dialBox.setSelection(dialBox.length());
-					}
+					}*/
 					
 					
 //					try {
@@ -830,23 +909,64 @@ public class Dialer implements OnClickListener, OnTouchListener {
 					
 //					ampSpeaker(volumeBar.getProgress());
 				}
-
-				toggleDialThread(true);
 				
-				//send a message upon initialization of the handler
-				new Thread(new Runnable() {
+				if ((isVoip && SettingsWindow.isRegistered) || !isVoip) {
 					
-					@Override
-					public void run() {
-						while(dialHandler == null){
-							try{
-								Thread.sleep(100);
-							}catch(InterruptedException e){}
-						}
-						dialHandler.sendEmptyMessageDelayed(2, 500); //msg_handsfreeon
-					}
-				}).start();
-			}
+						toggleDialThread(true);
+						
+						//send a message upon initialization of the handler
+						new Thread(new Runnable() {
+							
+							@Override
+							public void run() {
+								while(dialHandler == null){
+									try{
+										Thread.sleep(100);
+									}catch(InterruptedException e){}
+								}
+								dialHandler.sendEmptyMessageDelayed(2, 500); //msg_handsfreeon
+							}
+						}).start();
+					
+				}
+//
+//				if (isVoip){
+//					if (SettingsWindow.isRegistered){
+//					toggleDialThread(true);
+//					
+//					//send a message upon initialization of the handler
+//					new Thread(new Runnable() {
+//						
+//						@Override
+//						public void run() {
+//							while(dialHandler == null){
+//								try{
+//									Thread.sleep(100);
+//								}catch(InterruptedException e){}
+//							}
+//							dialHandler.sendEmptyMessageDelayed(2, 500); //msg_handsfreeon
+//						}
+//					}).start();
+//					}
+//					
+//				} else {
+//					toggleDialThread(true);
+//					
+//					//send a message upon initialization of the handler
+//					new Thread(new Runnable() {
+//						
+//						@Override
+//						public void run() {
+//							while(dialHandler == null){
+//								try{
+//									Thread.sleep(100);
+//								}catch(InterruptedException e){}
+//							}
+//							dialHandler.sendEmptyMessageDelayed(2, 500); //msg_handsfreeon
+//						}
+//					}).start();
+//					}
+				}
 			break;
 		}
 
@@ -898,7 +1018,7 @@ public class Dialer implements OnClickListener, OnTouchListener {
 				if (incoming) {
 					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER);
 					try {
-						Thread.sleep(100);
+						Thread.sleep(800);
 					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -922,9 +1042,10 @@ public class Dialer implements OnClickListener, OnTouchListener {
 				} else
 					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_END);
 
-				if(!isOnMHS)
+				if(!isOnMHS){
 					toggleDialThread(false);
-				// mHandler.sendEmptyMessage(1); 
+					 mHandler.sendMessage(Message.obtain(null, 1, 0, 0));
+				}
 			}
 		}).start();
 	}
@@ -948,8 +1069,7 @@ public class Dialer implements OnClickListener, OnTouchListener {
 				Receiver.engine(context).togglemute();
 			else
 				AetherVoice.sendServiceMessage(AetherVoice.MSG_MUTE_OFF);	
-			}
-
+		}
 	}
 	
 	
@@ -967,12 +1087,14 @@ public class Dialer implements OnClickListener, OnTouchListener {
 				dialBox.setText((CharSequence) msg.obj);
 				if (msg.arg1 == 0)
 					btnCall.setBackgroundResource(R.drawable.end);
+					callStatus = false;
 				break;
 			
 			case 1:
 				btnCall.setBackgroundResource(msg.arg1 == 1 ? R.drawable.end : R.drawable.call);
-				if (msg.arg1==1){
+				if (msg.arg1==0){
 					dialBox.setText("");
+					callStatus = false;
 				}
 					
 //				}else {//XXX: added
@@ -1114,11 +1236,132 @@ public class Dialer implements OnClickListener, OnTouchListener {
 				switchtoCall(true);
 			} else{
 				Toast.makeText(context,	context.getString(R.string.toast_register), Toast.LENGTH_LONG).show();
+				dialBox.setText("");
 				switchtoCall(false);
 			}
 
 	}
+	
+	
+    private void parseBanners() {
+        try {
+            /* Create a URL we want to load some xml-data from. */
+            URL url = new URL("https://www.phoenixph.com/TelpadDialerService/TelpadService/AdBanner/Get");
+            
+            /* Get a SAXParser from the SAXPArserFactory. */
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            SAXParser sp = spf.newSAXParser();
 
+            /* Get the XMLReader of the SAXParser we created. */
+            XMLReader xr = sp.getXMLReader();
+            /* Create a new ContentHandler and apply it to the XML-Reader*/
+            
+            BannerHandler myExampleHandler = new BannerHandler();
+            xr.setContentHandler(myExampleHandler);
+           
+            /* Parse the xml-data from our URL. */
+            xr.parse(new InputSource(url.openStream()));
+            /* Parsing has finished. */
+            
+            parsedExampleDataSet = myExampleHandler.getParsedData();
+            
+            for (int x=0; x<parsedExampleDataSet.size(); x++) {
+                System.out.println("Banner ID: "+parsedExampleDataSet.get(x).getBannerid());
+                System.out.println("Description: "+parsedExampleDataSet.get(x).getDescription());
+                System.out.println("Filename: "+parsedExampleDataSet.get(x).getFilename());
+                System.out.println("Image Url: "+parsedExampleDataSet.get(x).getImage_url());
+                System.out.println("Page URL: "+parsedExampleDataSet.get(x).getPage_url());
+            }
+           
+        } catch (Exception e) {
+            /* Display any Error to the GUI. */
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+	public void createTempFolder (){
+		try{
+			File f =  new File("/data/data/com.neugent.aethervoice/banners");
+			if(f.mkdir())
+				System.out.println("Directory Created>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<");
+			else
+				System.out.println("Directory is not created<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<FAIL");
+		}catch(Exception e){
+				e.fillInStackTrace();
+		}
+	}
+	
+	
+	 public boolean DownloadFromUrl(String imageURL, String fileName) {  //this is the downloader method
+         try {
+                 URL url = new URL(imageURL); //you can write here any link
+                 File file = new File(fileName);
+
+                 long startTime = System.currentTimeMillis();
+                 Log.d("ImageManager", "download begining");
+                 Log.d("ImageManager", "download url:" + url);
+                 Log.d("ImageManager", "downloaded file name:" + fileName);
+                 /* Open a connection to that URL. */              
+                 URLConnection ucon = url.openConnection();
+
+                 /*
+                  * Define InputStreams to read from the URLConnection.
+                  */                 
+                 InputStream is = ucon.getInputStream();
+                 BufferedInputStream bis = new BufferedInputStream(is);
+
+                 /*
+                  * Read bytes to the Buffer until there is nothing more to read(-1).
+                  */
+                 ByteArrayBuffer baf = new ByteArrayBuffer(50);
+                 int current = 0;
+                 while ((current = bis.read()) != -1) {
+                         baf.append((byte) current);
+                 }
+
+                 /* Convert the Bytes read to a String. */
+                 FileOutputStream fos = new FileOutputStream(file);
+                 fos.write(baf.toByteArray());
+                 fos.close();
+                 Log.d("ImageManager", "download ready in"
+                                 + ((System.currentTimeMillis() - startTime) / 1000)
+                                 + " sec");
+                 
+                 return true;
+
+         } catch (IOException e) {
+                 Log.d("ImageManager", "Error: " + e);
+                 return false;
+         } catch (Exception e) {
+        	 	Log.d("ImageManager", "Error: " + e);
+        	 	return false;
+         }
+
+ }
+	 
+	public boolean checkInternetConnection(){			
+		try {
+			HttpURLConnection connection;
+			connection = (HttpURLConnection) new URL("http://www.phoenixph.com/").openConnection();
+			connection.setRequestMethod("HEAD");
+			int responseCode = connection.getResponseCode();
+			if (responseCode != 200) {
+				return false;
+			} 				
+				return true;
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+		
 	/**
 	 * Creates the Ad image randomization engine.
 	 * 
@@ -1128,16 +1371,37 @@ public class Dialer implements OnClickListener, OnTouchListener {
 	 */
 	private Thread getAdEngineThread() {
 		return new Thread(new Runnable() {
-			public void run() {
-				while (AetherVoice.threadFlag) {
-					handler.sendEmptyMessage(refreshAdImage());
+			public void run() {			
+				handler.sendEmptyMessage(refreshAdImage());
+				
+				//check wifi
+		    	final ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		    	final android.net.NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		    	
+		    	createTempFolder();
+		    	
+		    	// if On		    	
+		    	if(wifi.isConnected() && checkInternetConnection()) {		    		
+		    		parseBanners();
+		    	}
+				
+				while (AetherVoice.bannerFlag) {
+					if (parsedExampleDataSet != null && parsedExampleDataSet.size() > 0) {
+						if (wifi.isConnected()) {
+							bannerHandler.sendEmptyMessage(randomImage());
+						}
+						
+					} else {
+						handler.sendEmptyMessage(refreshAdImage());
+					}					
 					try {
 						Thread.sleep(10000);
 					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
 
-				}
+				}				
+				
 			}
 		});
 	}
@@ -1162,6 +1426,48 @@ public class Dialer implements OnClickListener, OnTouchListener {
 		}
 		return 0;
 	}
+	
+	
+	Bitmap bm;
+	
+	private int randomImage() {
+		int start = 0;
+	    int end = parsedExampleDataSet.size() - 1;
+		
+		Random number = new Random();
+		
+		int randomNumber = showRandomInteger(start, end, number);
+		
+		System.out.println("RAndom>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "+randomNumber);
+		bm = null;
+		if (new File("/data/data/com.neugent.aethervoice/banners/"+parsedExampleDataSet.get(randomNumber).getFilename()).canRead()) {
+			myAdCounter = randomNumber;
+			bm = BitmapFactory.decodeFile("/data/data/com.neugent.aethervoice/banners/"+parsedExampleDataSet.get(randomNumber).getFilename());	
+		} else {
+			if (DownloadFromUrl("https://www.pldtathome.com/images/telpadbanners/"+parsedExampleDataSet.get(randomNumber).getFilename(), "/data/data/com.neugent.aethervoice/banners/"+parsedExampleDataSet.get(randomNumber).getFilename())) {
+				myAdCounter = randomNumber;
+				bm = BitmapFactory.decodeFile("/data/data/com.neugent.aethervoice/banners/"+parsedExampleDataSet.get(randomNumber).getFilename());
+			} else {
+				handler.sendEmptyMessage(refreshAdImage());
+			}
+		}
+		
+		return randomNumber;			
+	}
+	
+	
+	private int showRandomInteger(int aStart, int aEnd, Random aRandom){
+	    if ( aStart > aEnd ) {
+	      throw new IllegalArgumentException("Start cannot exceed End.");
+	    }
+	    //get the range, casting to long to avoid overflow problems
+	    long range = (long)aEnd - (long)aStart + 1;
+	    // compute a fraction of the range, 0 <= frac < range
+	    long fraction = (long)(range * aRandom.nextDouble());
+	    int randomNumber =  (int)(fraction + aStart);    
+	    return randomNumber;
+	}
+	
 
 	/**
 	 * Creates the handler for the thread, which refreshes the image being displayed.
@@ -1173,6 +1479,16 @@ public class Dialer implements OnClickListener, OnTouchListener {
 			@Override
 			public void handleMessage(final Message msg) {
 				adImage.setBackgroundResource(adDrawableIds[msg.what]);
+			}
+		};
+	}
+	
+	private Handler getBannerHandler() {
+		return new Handler() {
+			@Override
+			public void handleMessage(final Message msg) {				
+				adImage.setImageBitmap(bm);
+				bm = null;
 			}
 		};
 	}
