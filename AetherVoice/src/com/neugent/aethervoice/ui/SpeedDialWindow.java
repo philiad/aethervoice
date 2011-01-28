@@ -9,6 +9,7 @@ import org.sipdroid.sipua.ui.Receiver;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -19,8 +20,11 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.BaseColumns;
+import android.provider.CallLog;
 import android.provider.Contacts;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -53,6 +57,9 @@ import com.neugent.aethervoice.R;
  */
 @SuppressWarnings("deprecation")
 public class SpeedDialWindow extends Activity {
+	
+	/** The application context. **/
+	private Context mContext;
 
 	/** The cursor the holds the elements for the speedDialList. **/
 	private Cursor speedDialListCursor;
@@ -92,6 +99,7 @@ public class SpeedDialWindow extends Activity {
 	public void onCreate(final Bundle icicle) {
 		super.onCreate(icicle);
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+		mContext = this;
 		setContentView(R.layout.speed_dial);
 		initView();
 	}
@@ -111,28 +119,8 @@ public class SpeedDialWindow extends Activity {
 				.setOnClickListener(new OnClickListener() {
 
 					public void onClick(final View v) {
-						final Cursor speedDialListCursor = getContentResolver()
-								.query(ViewContactInfo.getContactsUri(), null,
-										"starred = ?", new String[] { "1" },
-										ViewContactInfo.getSortOrderString());
-						startManagingCursor(speedDialListCursor);
-
-						if (speedDialListCursor.moveToFirst()) {
-							final ContentValues values = new ContentValues();
-							values.put(ViewContactInfo.STARRED, 0);
-
-							do {
-								final String contactId = speedDialListCursor
-										.getString(speedDialListCursor
-												.getColumnIndex(ViewContactInfo._ID));
-								getContentResolver().update(
-										ViewContactInfo.getRawUri(), values,
-										ViewContactInfo._ID + " = ?",
-										new String[] { contactId });
-							} while (speedDialListCursor.moveToNext());
-
-							loadSpeedDialList();
-						}
+						if (speedDialList.getChildCount() > 0)
+							getConfirmDialog().show();
 					}
 
 				});
@@ -164,6 +152,50 @@ public class SpeedDialWindow extends Activity {
 				}));
 	}
 
+	public AlertDialog getConfirmDialog(){
+		final AlertDialog.Builder confirmDialog = new AlertDialog.Builder(this)
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.setTitle("Remove all contacts from Speed Dial List?")
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+			 int whichButton) {
+				new ClearSpeedDial().execute("-1");
+				/*remove();*/
+				}
+			})
+		.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+					int whichButton) {
+			}
+		});
+		return confirmDialog.create();
+	}
+	
+	private void remove(){
+		final Cursor speedDialListCursor = getContentResolver()
+		.query(ViewContactInfo.getContactsUri(), null,
+				"starred = ?", new String[] { "1" },
+				ViewContactInfo.getSortOrderString());
+			startManagingCursor(speedDialListCursor);
+	
+			if (speedDialListCursor.moveToFirst()) {
+				final ContentValues values = new ContentValues();
+				values.put(ViewContactInfo.STARRED, 0);
+	
+			do {
+				final String contactId = speedDialListCursor
+						.getString(speedDialListCursor
+								.getColumnIndex(ViewContactInfo._ID));
+				getContentResolver().update(
+						ViewContactInfo.getRawUri(), values,
+						ViewContactInfo._ID + " = ?",
+						new String[] { contactId });
+			} while (speedDialListCursor.moveToNext());
+	
+		loadSpeedDialList();
+	}
+	}
+	
 	/**
 	 * Reloads the cursor and the cursor adapter.
 	 * 
@@ -466,31 +498,55 @@ public class SpeedDialWindow extends Activity {
 			break;
 		}
 		case UNSTAR_MENU_ITEM: {
-			final AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item
-					.getMenuInfo();
-
-			final Cursor speedDialListCursor = getContentResolver().query(
-					ViewContactInfo.getContactsUri(), null, "starred = ?",
-					new String[] { "1" }, ViewContactInfo.getSortOrderString());
-			startManagingCursor(speedDialListCursor);
-
-			speedDialListCursor.moveToPosition(menuInfo.position);
-
-			final String contactId = speedDialListCursor
-					.getString(speedDialListCursor
-							.getColumnIndex(ViewContactInfo._ID));
-
-			final ContentValues values = new ContentValues();
-			values.put(ViewContactInfo.STARRED, 0);
-			getContentResolver().update(ViewContactInfo.getRawUri(), values,
-					ViewContactInfo._ID + " = ?", new String[] { contactId });
-			loadSpeedDialList();
+			getConfirmRemove(item).show();
 			break;
 		}
 		}
 		return super.onContextItemSelected(item);
 	}
+	
+	private AlertDialog getConfirmRemove(final MenuItem item){
+		final AlertDialog.Builder confirmDialog = new AlertDialog.Builder(this)
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.setTitle("Remove contact from Speed Dial List?")
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+			 int whichButton) {
+					removeItem(item);
+				}
+			})
+		.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog,
+					int whichButton) {
+			}
+		});
+		return confirmDialog.create();
+	}
+	
+	private void removeItem(MenuItem item){
+		final AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item
+		.getMenuInfo();
 
+		final Cursor speedDialListCursor = getContentResolver().query(
+				ViewContactInfo.getContactsUri(), null, "starred = ?",
+				new String[] { "1" }, ViewContactInfo.getSortOrderString());
+		startManagingCursor(speedDialListCursor);
+		
+		speedDialListCursor.moveToPosition(menuInfo.position);
+		
+		final String contactId = speedDialListCursor
+				.getString(speedDialListCursor
+						.getColumnIndex(ViewContactInfo._ID));
+		
+		new ClearSpeedDial().execute(contactId);
+		
+		/*final ContentValues values = new ContentValues();
+		values.put(ViewContactInfo.STARRED, 0);
+		getContentResolver().update(ViewContactInfo.getRawUri(), values,
+				ViewContactInfo._ID + " = ?", new String[] { contactId });
+		loadSpeedDialList();*/
+	}
+	
 	/**
 	 * Called when the tab is reselected, and upon doing so,
 	 * refreshContactList() is then called if the mustUpdateContactList is
@@ -543,4 +599,59 @@ public class SpeedDialWindow extends Activity {
 		return super.onKeyDown(keyCode, event);*/
 		return false;
 	}
+	
+private class ClearSpeedDial extends AsyncTask<String, Void, Void>{
+		
+		private ProgressDialog pDialog;
+		
+		@Override
+		protected void onPreExecute() {
+			pDialog = new ProgressDialog(mContext);
+			pDialog.setCancelable(false);
+			pDialog.setMessage("Removing from speed dial");
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.show();
+			super.onPreExecute();
+		}
+
+		@Override
+		protected Void doInBackground(String... params) {
+			if(params[0].equals("-1")){
+				final Cursor speedDialListCursor = getContentResolver().query(ViewContactInfo.getContactsUri(), null,
+								"starred = ?", new String[] { "1" }, ViewContactInfo.getSortOrderString());
+					startManagingCursor(speedDialListCursor);
+			
+					if (speedDialListCursor.moveToFirst()) {
+						final ContentValues values = new ContentValues();
+						values.put(ViewContactInfo.STARRED, 0);
+						do {
+							final String contactId = speedDialListCursor.getString(
+									speedDialListCursor.getColumnIndex(ViewContactInfo._ID));
+							getContentResolver().update(ViewContactInfo.getRawUri(), values, 
+									ViewContactInfo._ID + " = ?", new String[] { contactId });
+					} while (speedDialListCursor.moveToNext());
+				}
+			}else{
+				final ContentValues values = new ContentValues();
+				values.put(ViewContactInfo.STARRED, 0);
+				getContentResolver().update(ViewContactInfo.getRawUri(), values,
+						ViewContactInfo._ID + " = ?", new String[] { params[0] });
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onProgressUpdate(Void... values) {
+			super.onProgressUpdate(values);
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			pDialog.dismiss();
+			loadSpeedDialList();
+			super.onPostExecute(result);
+		}
+		
+	}
+	
 }

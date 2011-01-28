@@ -176,7 +176,7 @@ import com.neugent.aethervoice.ui.SettingsWindow;
 				{
 				case UserAgent.UA_STATE_INCOMING_CALL:
 					System.out.println("UA_STATE_INCOMING_CALL");
-					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER); // XXX:raises the ehs to emulate busy
+					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER); //raises the ehs to emulate busy
 					
 					enable_wifi(true);
 					RtpStreamReceiver.good = RtpStreamReceiver.lost = RtpStreamReceiver.loss = RtpStreamReceiver.late = 0;
@@ -232,7 +232,7 @@ import com.neugent.aethervoice.ui.SettingsWindow;
 		        	Checkin.checkin(true);
 					break;
 				case UserAgent.UA_STATE_OUTGOING_CALL:
-					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER); // XXX:raises the ehs to emulate busy
+					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER); //raises the ehs to emulate busy
 					
 					RtpStreamReceiver.good = RtpStreamReceiver.lost = RtpStreamReceiver.loss = RtpStreamReceiver.late = 0;
 					RtpStreamReceiver.speakermode = speakermode();
@@ -253,7 +253,7 @@ import com.neugent.aethervoice.ui.SettingsWindow;
 					System.out.println("UA_STATE_IDLE");
 					AetherVoice.dialer.mHandler.sendEmptyMessage(2); //added by PJ
 					
-					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_END); // XXX:lowers the ehs to end call
+					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_END); //lowers the ehs to end call
 					System.out.println("****************************** disabled the ehs now shifting the call button");
 					AetherVoice.dialer.switchtoCall(false);
 					
@@ -282,7 +282,7 @@ import com.neugent.aethervoice.ui.SettingsWindow;
 					break;
 			case UserAgent.UA_STATE_INCALL:
 				System.out.println("UA_STATE_INCALL");
-					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER); // XXX:raises the ehs to emulate busy
+					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_ANSWER); //raises the ehs to emulate busy
 				
 					broadcastCallStateChanged("OFFHOOK", null);
 					if (ccCall.base == 0) {

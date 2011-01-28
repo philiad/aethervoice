@@ -6,17 +6,16 @@
 
 package com.neugent.aethervoice.ui;
 
+import java.io.File;
 import java.util.List;
 
 import org.sipdroid.media.RtpStreamReceiver;
 import org.sipdroid.sipua.UserAgent;
-import org.sipdroid.sipua.phone.Call;
 import org.sipdroid.sipua.phone.Connection;
 import org.sipdroid.sipua.ui.Receiver;
 import org.sipdroid.sipua.ui.RegisterService;
 import org.sipdroid.sipua.ui.Settings;
 
-import android.R.anim;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -47,13 +46,12 @@ import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.ViewGroup.LayoutParams;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -64,6 +62,7 @@ import android.widget.Toast;
 
 import com.neugent.aethervoice.R;
 import com.neugent.aethervoice.log.ErrorAlert;
+
 
 /**
  * @class AetherVoice
@@ -306,6 +305,8 @@ public class AetherVoice extends TabActivity {
 	/** The current page number in viewing the help dialog. **/
 	private static int helpIndex = 0;
 	
+	public static boolean bannerFlag = false;
+	
 	/**
 	 * Initializes the AetherVoice Screen and its contents. Called when the
 	 * AetherVoice application is launched.
@@ -318,8 +319,10 @@ public class AetherVoice extends TabActivity {
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.aethervoice);
 		AetherVoice.mErrorAlert = new ErrorAlert(this);
+		
 		initViews();
 	}
+
 
 	/**
 	 * Initializes the AetherVoice main screen, creating the four layout frames
@@ -365,6 +368,22 @@ public class AetherVoice extends TabActivity {
 		AetherVoice.webFrame = (LinearLayout) findViewById(R.id.web_frame);
 		AetherVoice.webView = (WebView) findViewById(R.id.web_view);
 		
+		AetherVoice.webView.requestFocus(View.FOCUS_DOWN);
+		AetherVoice.webView.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_UP:
+                    if (!v.hasFocus()) {
+                        v.requestFocus();
+                    }
+                    break;
+            }
+            return false;
+			}
+        });
+		
 		AetherVoice.settingsFrame = (LinearLayout)findViewById(R.id.settings_frame);
 		
 		//AetherVoice.tabFrame.setVisibility(View.GONE);
@@ -378,6 +397,7 @@ public class AetherVoice extends TabActivity {
 		
 		// Instantiating the dialer frame
 		AetherVoice.threadFlag = true;
+		AetherVoice.bannerFlag = true;
 		AetherVoice.dialer = new Dialer(this);
 		AetherVoice.dialerFrame.addView(AetherVoice.dialer.getDialerView(),
 				new LayoutParams(LayoutParams.FILL_PARENT,
@@ -526,7 +546,7 @@ public class AetherVoice extends TabActivity {
 		
 		AetherVoice.infoFrame.setVisibility(View.GONE);
 		
-		if(!isCalling)
+		if(!isCalling && !viewSettings)
 			AetherVoice.tabFrame.setVisibility(View.VISIBLE); //added by pj to prevent tabframe and callscreen appearing at the same time
 	}
 
@@ -628,7 +648,8 @@ public class AetherVoice extends TabActivity {
 	 * @see CallHistoryWindow#setMustUpdateCallHistory()
 	 */
 	public static void hideCallFrame(final boolean mustRunOnBackGround) {
-
+		CallHistoryWindow.setMustUpdateCallHistory();
+		
 		if (!AetherVoice.isOnBackGround && AetherVoice.isCalling) {
 
 			AetherVoice.isOnBackGround = mustRunOnBackGround;
@@ -649,11 +670,10 @@ public class AetherVoice extends TabActivity {
 				AetherVoice.tabFrame.setVisibility(View.VISIBLE);
 		}
 
-		
 
 		if (!mustRunOnBackGround && AetherVoice.isCalling) {
 			
-			CallHistoryWindow.setMustUpdateCallHistory();
+			
 			AetherVoice.callFrame.setVisibility(View.GONE);
 			if (AetherVoice.viewOrEdit)
 				AetherVoice.infoFrame.setVisibility(View.VISIBLE);
@@ -815,11 +835,14 @@ public class AetherVoice extends TabActivity {
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		// menu.add(0, MEMO_MENU_ITEM, 0, R.string.menu_memo);
-		menu.add(0, AetherVoice.WEB_MENU_ITEM, 0, R.string.menu_web);
-		menu.add(0, AetherVoice.FULL_MENU_ITEM, 0, R.string.menu_full);
-		menu.add(0, AetherVoice.HELP_MENU_ITEM, 0, R.string.menu_help);		
-		menu.add(0, AetherVoice.ABOUT_MENU_ITEM, 0, R.string.menu_about);
-		menu.add(0, AetherVoice.SETTINGS_MENU_ITEM,0 , R.string.menu_settings);
+		//menu.add(0, AetherVoice.WEB_MENU_ITEM, 0, R.string.menu_web);
+		//menu.add(0, AetherVoice.FULL_MENU_ITEM, 0, R.string.menu_full);
+		menu.add(0, AetherVoice.SETTINGS_MENU_ITEM,0 , R.string.menu_settings)			
+			.setIcon(MyUtils.resizeImage(getApplicationContext(), R.drawable.settings_voip, 60, 60));
+		menu.add(0, AetherVoice.HELP_MENU_ITEM, 0, R.string.menu_help)
+			.setIcon(MyUtils.resizeImage(getApplicationContext(), R.drawable.settings_help, 60, 60));
+		menu.add(0, AetherVoice.ABOUT_MENU_ITEM, 0, R.string.menu_about)
+			.setIcon(MyUtils.resizeImage(getApplicationContext(), R.drawable.settings_about, 60, 60));		
 		// menu.add(0, MENU_ITEM_TEST, 0, "Run Call Test");
 		// menu.add(0, MENU_ITEM_RESULT, 0, "Export Result");
 		return true;
@@ -833,16 +856,16 @@ public class AetherVoice extends TabActivity {
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(final Menu menu) {
-		if (AetherVoice.webViewing) {
-			menu.findItem(AetherVoice.FULL_MENU_ITEM).setVisible(true);
-			if (AetherVoice.fullScreen) {
-				menu.findItem(AetherVoice.FULL_MENU_ITEM).setTitle(R.string.menu_minimize);				
-			} else {
-				menu.findItem(AetherVoice.FULL_MENU_ITEM).setTitle(R.string.menu_full);					
-			}						
-		} else {
-			menu.findItem(AetherVoice.FULL_MENU_ITEM).setVisible(false);			
-		}
+//		if (AetherVoice.webViewing) {
+//			menu.findItem(AetherVoice.FULL_MENU_ITEM).setVisible(true);
+//			if (AetherVoice.fullScreen) {
+//				menu.findItem(AetherVoice.FULL_MENU_ITEM).setTitle(R.string.menu_minimize);				
+//			} else {
+//				menu.findItem(AetherVoice.FULL_MENU_ITEM).setTitle(R.string.menu_full);					
+//			}						
+//		} else {
+//			menu.findItem(AetherVoice.FULL_MENU_ITEM).setVisible(false);			
+//		}
 			
 
 		// if(isRecording){
@@ -974,11 +997,14 @@ public class AetherVoice extends TabActivity {
 		}
 		case SETTINGS_MENU_ITEM:{
 //			System.out.println("Settings chosen");
-			if (AetherVoice.viewSettings){
+			if (!AetherVoice.isCalling){
+				if (AetherVoice.viewSettings){
+			
 				AetherVoice.viewSettings = false;
-				if (AetherVoice.isCalling){
-					AetherVoice.showCallFrame(this);
-				}else if (AetherVoice.webViewing){
+//				if (AetherVoice.isCalling){
+//					AetherVoice.showCallFrame(this);
+//				}else
+					if (AetherVoice.webViewing){
 //					if (AetherVoice.fullScreen)
 //						AetherVoice.fullScreen = false;
 					AetherVoice.webFrame.setVisibility(View.VISIBLE);
@@ -988,17 +1014,17 @@ public class AetherVoice extends TabActivity {
 					
 					
 				}
-			if (AetherVoice.isCalling){
-				AetherVoice.callFrame.setVisibility(View.VISIBLE);
-			}
+//			if (AetherVoice.isCalling){
+//				AetherVoice.callFrame.setVisibility(View.VISIBLE);
+//			}
 			AetherVoice.settingsFrame.setVisibility(View.GONE);
 			}else {
 				AetherVoice.viewSettings = true;
 				AetherVoice.tabFrame.setVisibility(View.GONE);
 				AetherVoice.settingsFrame.setVisibility(View.VISIBLE);
-				if (AetherVoice.isCalling)
-//					AetherVoice.hideCallFrame(false);
-					AetherVoice.callFrame.setVisibility(View.GONE);
+//				if (AetherVoice.isCalling)
+////					AetherVoice.hideCallFrame(false);
+//					AetherVoice.callFrame.setVisibility(View.GONE);
 				if (AetherVoice.viewOrEdit){
 					AetherVoice.hideInfoFrame(false);
 				}
@@ -1011,6 +1037,7 @@ public class AetherVoice extends TabActivity {
 				}
 				
 			}
+			}
 			return true;
 		}
 		}
@@ -1022,6 +1049,7 @@ public class AetherVoice extends TabActivity {
 		try {
 			ComponentName comp = new ComponentName(context, cls);
 			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
+						
 			return pinfo.versionName;
 		} catch (android.content.pm.PackageManager.NameNotFoundException e) {
 			return null;
@@ -1061,7 +1089,7 @@ public class AetherVoice extends TabActivity {
 				break;*/
 
 			case KeyEvent.KEYCODE_CALL:
-				//TODO: add on hold module here
+				//TODO: add pstn on hold module here
 				switch (Receiver.call_state) {
 				case UserAgent.UA_STATE_INCOMING_CALL:
 					AetherVoice.mCallScreen.answer();
@@ -1091,7 +1119,7 @@ public class AetherVoice extends TabActivity {
 					if(isIncoming)
 						AetherVoice.dialer.endCall(true, false);
 					else
-						AetherVoice.dialer.endCall(false, false);
+						AetherVoice.dialer.endCall(false, true);
 
 			case KeyEvent.KEYCODE_CAMERA:
 				// Disable the CAMERA button while in-call since it's too
@@ -1113,6 +1141,8 @@ public class AetherVoice extends TabActivity {
 			case KeyEvent.KEYCODE_ENDCALL:
 				return true;
 			case KeyEvent.KEYCODE_BACK: {
+
+				
 				if (AetherVoice.webViewing) {
 					if (AetherVoice.isScribbling)
 						AetherVoice.memoFrame.setVisibility(View.VISIBLE);
@@ -1145,13 +1175,14 @@ public class AetherVoice extends TabActivity {
 					AetherVoice.dialer.closePanel();
 				} else {
 					if (AetherVoice.isIncoming && !AetherVoice.isOngoing)
-						AetherVoice.dialer.endCall(true, false);
+						AetherVoice.dialer.endCall(true, true);
 					else
 						AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_END);
 
-					if (AetherVoice.isFinishing)
+					if (AetherVoice.isFinishing) {
+						AetherVoice.bannerFlag = false;						
 						finish();
-					else {
+					} else {
 						Toast.makeText(getApplicationContext(),
 								R.string.toast_finish, Toast.LENGTH_SHORT)
 								.show();
@@ -1194,7 +1225,7 @@ public class AetherVoice extends TabActivity {
 				} else if (AetherVoice.isIncoming && !AetherVoice.isOngoing)
 					AetherVoice.dialer.endCall(true, false);
 				else {
-					AetherVoice.dialer.btnCall.performClick();
+//					AetherVoice.dialer.btnCall.performClick();
 					AetherVoice.sendServiceMessage(AetherVoice.MSG_CALL_END);
 				}
 
@@ -1214,6 +1245,7 @@ public class AetherVoice extends TabActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
+		AetherVoice.bannerFlag = true;
 		
 //		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> onResume");
 		
@@ -1336,8 +1368,25 @@ public class AetherVoice extends TabActivity {
 	 **/
 	@Override
 	protected void onStop() {
-	if (!AetherVoice.isCalling)
-		finish(); // test
+		if (Dialer.adEngineThread != null) {
+			Dialer.adEngineThread.interrupt();
+			Dialer.adEngineThread = null;
+		}
+		
+		
+		AetherVoice.bannerFlag = false;
+		
+		if (AetherVoice.isCalling){
+			//TODO handle home while there is an ongoing call
+		}else{
+			finish(); // test
+			try{
+				onDestroy();
+			}catch(UnsupportedOperationException e){
+				//this is a work around until a proper work around is found
+			}
+			
+		}
 		super.onStop();
 	}
 
@@ -1350,12 +1399,22 @@ public class AetherVoice extends TabActivity {
 	 */
 	@Override
 	public void onDestroy() {
-		AetherVoice.threadFlag = false;
+		System.out.println(">>>>>>>>>>>>>>>>>>>>> ONDESTROY");
+		
+		AetherVoice.threadFlag = false;	
+		AetherVoice.bannerFlag = false;
+		if (Dialer.adEngineThread != null) {
+			Dialer.adEngineThread.stop();
+			Dialer.adEngineThread = null;
+		}
+		
 		
 		if (AetherVoice.dialer != null)
 			AetherVoice.dialer.toggleDialThread(false);
 
 		doUnbindService();
+		
+		deleteDir(new File("/data/data/com.neugent.aethervoice/banners"));
 		
 		super.onDestroy();
 	}
@@ -1598,7 +1657,7 @@ public class AetherVoice extends TabActivity {
 				
 				if (!Dialer.isVoip) {
 
-					if (AetherVoice.isIncoming)
+					if (AetherVoice.isIncoming && !isOngoing)
 						Connection.addCall(null, getApplicationContext(),
 								AetherVoice.mCallNumber, false,
 								CallLog.Calls.MISSED_TYPE, System
@@ -1630,9 +1689,6 @@ public class AetherVoice extends TabActivity {
 									AetherVoice.mstartCallTime,
 									duration);
 					
-					dialer.dialBox.setText("");
-					dialer.dialBox.setSelection(dialer.dialBox.length());
-
 					// dialer.updateMHSStatus(false);
 
 					AetherVoice.mstartCallTime = 0;
@@ -1640,6 +1696,9 @@ public class AetherVoice extends TabActivity {
 					AetherVoice.isOnHold = false;
 					AetherVoice.isOutgoing = false;
 					AetherVoice.isIncoming = false;
+					
+					dialer.dialBox.setText("");
+					dialer.dialBox.setSelection(dialer.dialBox.length());
 
 					CallHistoryWindow.setMustUpdateCallHistory();
 					
@@ -1649,7 +1708,6 @@ public class AetherVoice extends TabActivity {
 					}
 					
 					
-						
 				}
 				break;
 			case MSG_MANUAL_ON:
@@ -1658,11 +1716,26 @@ public class AetherVoice extends TabActivity {
 				AetherVoice.dialer.updateMHSStatus(true);
 				break;
 			case MSG_MANUAL_OFF:
-				if (!(AetherVoice.isOngoing || AetherVoice.isIncoming
-						|| AetherVoice.isOutgoing || AetherVoice.isOnHold)) {
+				if (!AetherVoice.dialer.callStatus) {
 					if (SettingsWindow.isRegistered)
 						register();
-					AetherVoice.dialer.dialBox.setText("");
+					/*AetherVoice.dialer.dialBox.setText("");*/ //This should be handled by end call
+					
+					if (AetherVoice.pstnCallScreen != null) {
+						if(isIncoming)
+							Connection.addCall(null, getApplicationContext(),
+									AetherVoice.mCallNumber, false,
+									CallLog.Calls.INCOMING_TYPE,
+									AetherVoice.mstartCallTime,
+									AetherVoice.pstnCallScreen.mCallDuration);
+						else if(isOngoing)
+							Connection.addCall(null, getApplicationContext(),
+									dialer.dialBox.getText().toString(), false,
+									CallLog.Calls.OUTGOING_TYPE,
+									AetherVoice.mstartCallTime,
+									AetherVoice.pstnCallScreen.mCallDuration);
+						CallHistoryWindow.setMustUpdateCallHistory();
+					}
 				}
 				AetherVoice.dialer.updateMHSStatus(false);
 				break;
@@ -1880,5 +1953,18 @@ public class AetherVoice extends TabActivity {
 			mIsBound = false;
 		}
 	}
+	
+    public static boolean deleteDir(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i=0; i<children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
+    }
 	
 }

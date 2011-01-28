@@ -26,7 +26,7 @@ public class ErrorAlert implements OnKeyListener{
 					public void onClick(final DialogInterface dialog,
 							final int which) {
 						//Prevent to finish activity, if user clicks about.
-						if (!title.equalsIgnoreCase("About")) {
+						if (!title.equalsIgnoreCase("About") && !title.equalsIgnoreCase("Directory Error") && !title.equalsIgnoreCase("View")) {
 							((Activity) mContext).finish();
 						}
 						

@@ -34,7 +34,7 @@ import com.neugent.aethervoice.R;
 /**
  * Loads images from SD card. 
  * 
- * @author Mihai Fonoage
+ * 
  *
  */
 public class ImageGallery extends Activity {
